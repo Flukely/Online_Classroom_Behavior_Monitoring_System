@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Detection App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Face Detection App</h1>
+        <div class="upload-section">
+            <input type="file" id="videoUpload" accept="video/*">
+        </div>
+        <div class="loader" id="loader"></div>
+        <div class="video-container">
+            <video id="myVideo" autoplay muted></video>
+        </div>
+        <div id="snapshotContainer"></div>
+        <div id="status"></div>
+    </div>
+    
+    <!-- Load scripts at the end of body -->
+    <script src="face-api.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

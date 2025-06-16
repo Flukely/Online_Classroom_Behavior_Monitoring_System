@@ -1,0 +1,554 @@
+2025-06-11 20:42:18 - INFO - Starting Flask server
+2025-06-11 20:42:18 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-11 20:42:18 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-11 20:42:18 - INFO -  * Restarting with watchdog (windowsapi)
+2025-06-11 20:42:19 - INFO - Starting Flask server
+2025-06-11 20:42:19 - WARNING -  * Debugger is active!
+2025-06-11 20:42:19 - INFO -  * Debugger PIN: 128-244-214
+2025-06-11 20:42:19 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:19] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:29 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:29] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:29 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:42:29 - DEBUG - Analysis result: {'behavior': 'เงยหน้า', 'pitch': 89.5, 'yaw': 0.6, 'roll': 1.2, 'eye_status': 'หลับตา'}
+2025-06-11 20:42:29 - INFO - Successfully analyzed behavior: เงยหน้า
+2025-06-11 20:42:29 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:29] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:32 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:42:32 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 83.7, 'yaw': -21.8, 'roll': 1.3, 'eye_status': 'หลับตา'}
+2025-06-11 20:42:32 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:42:32 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:32] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:35 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:35] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:35 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:42:35 - DEBUG - Analysis result: {'behavior': 'ก้มหน้า', 'pitch': 95.9, 'yaw': 25.5, 'roll': -2.8, 'eye_status': 'ลืมตา'}
+2025-06-11 20:42:35 - INFO - Successfully analyzed behavior: ก้มหน้า
+2025-06-11 20:42:35 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:35] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:47 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:47] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:47 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:42:47 - DEBUG - Analysis result: {'behavior': 'เงยหน้า', 'pitch': 89.5, 'yaw': 0.6, 'roll': 1.2, 'eye_status': 'หลับตา'}
+2025-06-11 20:42:47 - INFO - Successfully analyzed behavior: เงยหน้า
+2025-06-11 20:42:47 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:47] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:50 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:42:50 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 83.7, 'yaw': -21.8, 'roll': 1.3, 'eye_status': 'หลับตา'}
+2025-06-11 20:42:50 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:42:50 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:50] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:53 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:53] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:42:53 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:42:53 - DEBUG - Analysis result: {'behavior': 'ก้มหน้า', 'pitch': 95.9, 'yaw': 25.5, 'roll': -2.8, 'eye_status': 'ลืมตา'}
+2025-06-11 20:42:53 - INFO - Successfully analyzed behavior: ก้มหน้า
+2025-06-11 20:42:53 - INFO - 127.0.0.1 - - [11/Jun/2025 20:42:53] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:23 - INFO - Starting Flask server
+2025-06-11 20:48:23 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-11 20:48:23 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-11 20:48:23 - INFO -  * Restarting with watchdog (windowsapi)
+2025-06-11 20:48:25 - INFO - Starting Flask server
+2025-06-11 20:48:25 - WARNING -  * Debugger is active!
+2025-06-11 20:48:25 - INFO -  * Debugger PIN: 128-244-214
+2025-06-11 20:48:38 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:38] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:38 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:48:38 - DEBUG - Analysis result: {'behavior': 'เงยหน้า', 'pitch': 89.5, 'yaw': 0.6, 'roll': 1.2, 'eye_status': 'หลับตา'}
+2025-06-11 20:48:38 - INFO - Successfully analyzed behavior: เงยหน้า
+2025-06-11 20:48:38 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:38] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:41 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:48:41 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 83.6, 'yaw': -23.3, 'roll': 1.4, 'eye_status': 'หลับตา'}
+2025-06-11 20:48:41 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:48:41 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:41] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:44 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:44] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:44 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:48:44 - DEBUG - Analysis result: {'behavior': 'หันซ้าย', 'pitch': 98.8, 'yaw': 29.4, 'roll': -2.9, 'eye_status': 'หลับตา'}
+2025-06-11 20:48:44 - INFO - Successfully analyzed behavior: หันซ้าย
+2025-06-11 20:48:44 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:44] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:47 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:48:47 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 86.3, 'yaw': -1.1, 'roll': 1.1, 'eye_status': 'หลับตา'}
+2025-06-11 20:48:47 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:48:47 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:47] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:50 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:50] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:50 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:48:50 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 88.7, 'yaw': -3.8, 'roll': -1.2, 'eye_status': 'ลืมตา'}
+2025-06-11 20:48:50 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:48:50 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:50] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:53 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:48:53 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 92.5, 'yaw': 39.2, 'roll': -2.8, 'eye_status': 'ลืมตา'}
+2025-06-11 20:48:53 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:48:53 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:53] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:56 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:56] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:56 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:48:56 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 92.5, 'yaw': 39.2, 'roll': -2.8, 'eye_status': 'ลืมตา'}
+2025-06-11 20:48:56 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:48:56 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:56] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:48:59 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:48:59 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 92.5, 'yaw': 39.2, 'roll': -2.8, 'eye_status': 'ลืมตา'}
+2025-06-11 20:48:59 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:48:59 - INFO - 127.0.0.1 - - [11/Jun/2025 20:48:59] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:49:02 - INFO - 127.0.0.1 - - [11/Jun/2025 20:49:02] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:49:02 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:49:02 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 92.5, 'yaw': 39.2, 'roll': -2.8, 'eye_status': 'ลืมตา'}
+2025-06-11 20:49:02 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:49:02 - INFO - 127.0.0.1 - - [11/Jun/2025 20:49:02] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:49:05 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:49:05 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 92.5, 'yaw': 39.2, 'roll': -2.8, 'eye_status': 'ลืมตา'}
+2025-06-11 20:49:05 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:49:05 - INFO - 127.0.0.1 - - [11/Jun/2025 20:49:05] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:49:27 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\utils\\image_processing.py', reloading
+2025-06-11 20:49:27 - INFO -  * Restarting with watchdog (windowsapi)
+2025-06-11 20:49:29 - INFO - Starting Flask server
+2025-06-11 20:49:29 - WARNING -  * Debugger is active!
+2025-06-11 20:49:29 - INFO -  * Debugger PIN: 128-244-214
+2025-06-11 20:51:30 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\utils\\debug_visualizer.py', reloading
+2025-06-11 20:51:30 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\utils\\debug_visualizer.py', reloading
+2025-06-11 20:51:30 - INFO -  * Restarting with watchdog (windowsapi)
+2025-06-11 20:51:31 - INFO - Starting Flask server
+2025-06-11 20:51:31 - WARNING -  * Debugger is active!
+2025-06-11 20:51:31 - INFO -  * Debugger PIN: 128-244-214
+2025-06-11 20:51:34 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\utils\\debug_visualizer.py', reloading
+2025-06-11 20:51:34 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\utils\\debug_visualizer.py', reloading
+2025-06-11 20:51:35 - INFO -  * Restarting with watchdog (windowsapi)
+2025-06-11 20:51:36 - INFO - Starting Flask server
+2025-06-11 20:51:36 - WARNING -  * Debugger is active!
+2025-06-11 20:51:36 - INFO -  * Debugger PIN: 128-244-214
+2025-06-11 20:51:41 - INFO -  * Detected change in 'C:\\Users\\User\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python311\\site-packages\\cv2\\__init__.py', reloading
+2025-06-11 20:51:42 - INFO -  * Restarting with watchdog (windowsapi)
+2025-06-11 20:51:44 - INFO - Starting Flask server
+2025-06-11 20:51:44 - WARNING -  * Debugger is active!
+2025-06-11 20:51:44 - INFO -  * Debugger PIN: 128-244-214
+2025-06-11 20:51:46 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\utils\\debug_visualizer.py', reloading
+2025-06-11 20:51:46 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\utils\\debug_visualizer.py', reloading
+2025-06-11 20:51:47 - INFO -  * Restarting with watchdog (windowsapi)
+2025-06-11 20:51:48 - INFO - Starting Flask server
+2025-06-11 20:51:48 - WARNING -  * Debugger is active!
+2025-06-11 20:51:48 - INFO -  * Debugger PIN: 128-244-214
+2025-06-11 20:51:58 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\app.py', reloading
+2025-06-11 20:51:58 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\app.py', reloading
+2025-06-11 20:51:58 - INFO -  * Detected change in 'D:\\วิจัย\\Code\\Dmo_Online_Classroom_Behavior_Monitoring_System\\backend\\app.py', reloading
+2025-06-11 20:51:58 - INFO -  * Restarting with watchdog (windowsapi)
+2025-06-11 20:52:00 - INFO - Starting Flask server
+2025-06-11 20:52:00 - ERROR - Display not available: name 'cv2' is not defined
+2025-06-11 20:52:00 - WARNING -  * Debugger is active!
+2025-06-11 20:52:00 - INFO -  * Debugger PIN: 128-244-214
+2025-06-11 20:52:17 - INFO - Starting Flask server
+2025-06-11 20:52:17 - ERROR - Display not available: name 'cv2' is not defined
+2025-06-11 20:52:17 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-11 20:52:17 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-11 20:53:15 - INFO - Starting Flask server
+2025-06-11 20:53:15 - ERROR - Display not available: name 'cv2' is not defined
+2025-06-11 20:53:15 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-11 20:53:15 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-11 20:53:21 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:21] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:53:21 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:21 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:21 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:21] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:24 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:24 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:24 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:24] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:27 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:27] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:53:27 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:27 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:27 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:27] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:30 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:31 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:31 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:31] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:34 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:34] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:53:34 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:34 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:34 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:34] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:37 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:37 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:37 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:37] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:40 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:40] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:53:40 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:40 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:40 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:40] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:43 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:43 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:43 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:43] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:46 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:46] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:53:46 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:46 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:46 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:46] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:49 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:49 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:49 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:49] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:52 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:52] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:53:52 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:52 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:52 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:52] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:55 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:55 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:55 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:55] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:53:58 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:58] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:53:58 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:53:58 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:53:58 - INFO - 127.0.0.1 - - [11/Jun/2025 20:53:58] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:54:01 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:54:01 - ERROR - Behavior analysis error: name 'traceback' is not defined
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 64, in draw_debug_info
+    self.font, 0.7, (255, 255, 255), 2)
+    ^^^^^^^^^
+AttributeError: 'DebugVisualizer' object has no attribute 'font'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\app.py", line 74, in analyze_snapshot
+    result = analyze_behavior(frame)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 96, in analyze_behavior
+    return analyzer.analyze_behavior(frame)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\behavior_analysis.py", line 88, in analyze_behavior
+    self.debugger.draw_debug_info(frame, coords, result)
+  File "D:\วิจัย\Code\Dmo_Online_Classroom_Behavior_Monitoring_System\backend\utils\debug_visualizer.py", line 77, in draw_debug_info
+    logging.error(f"Error in draw_debug_info: {str(e)}\n{traceback.format_exc()}")
+                                                         ^^^^^^^^^
+NameError: name 'traceback' is not defined
+
+2025-06-11 20:54:01 - INFO - 127.0.0.1 - - [11/Jun/2025 20:54:01] "[35m[1mPOST /api/analyze HTTP/1.1[0m" 500 -
+2025-06-11 20:55:41 - INFO - Starting Flask server
+2025-06-11 20:55:41 - ERROR - Display not available: name 'cv2' is not defined
+2025-06-11 20:55:41 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-11 20:55:41 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-11 20:55:47 - INFO - 127.0.0.1 - - [11/Jun/2025 20:55:47] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:55:47 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:55:47 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 88.9, 'yaw': -1.2, 'roll': 0.0, 'eye_status': 'หลับตา'}
+2025-06-11 20:55:47 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:55:47 - INFO - 127.0.0.1 - - [11/Jun/2025 20:55:47] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:55:50 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:55:50 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 81.7, 'yaw': -22.0, 'roll': 2.6, 'eye_status': 'ลืมตา'}
+2025-06-11 20:55:50 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:55:50 - INFO - 127.0.0.1 - - [11/Jun/2025 20:55:50] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:55:53 - INFO - 127.0.0.1 - - [11/Jun/2025 20:55:53] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:55:53 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:55:53 - DEBUG - Analysis result: {'behavior': 'ก้มหน้า', 'pitch': 95.1, 'yaw': 25.5, 'roll': -2.8, 'eye_status': 'ลืมตา'}
+2025-06-11 20:55:53 - INFO - Successfully analyzed behavior: ก้มหน้า
+2025-06-11 20:55:53 - INFO - 127.0.0.1 - - [11/Jun/2025 20:55:53] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:55:56 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:55:56 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 86.2, 'yaw': -0.5, 'roll': 0.0, 'eye_status': 'หลับตา'}
+2025-06-11 20:55:56 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:55:56 - INFO - 127.0.0.1 - - [11/Jun/2025 20:55:56] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:55:59 - INFO - 127.0.0.1 - - [11/Jun/2025 20:55:59] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:55:59 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:55:59 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 88.6, 'yaw': -3.6, 'roll': -1.2, 'eye_status': 'ลืมตา'}
+2025-06-11 20:55:59 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:55:59 - INFO - 127.0.0.1 - - [11/Jun/2025 20:55:59] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:56:02 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:56:02 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 92.0, 'yaw': 40.5, 'roll': -2.8, 'eye_status': 'ลืมตา'}
+2025-06-11 20:56:02 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:56:02 - INFO - 127.0.0.1 - - [11/Jun/2025 20:56:02] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:56:05 - INFO - 127.0.0.1 - - [11/Jun/2025 20:56:05] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:56:05 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:56:05 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 96.7, 'yaw': 11.1, 'roll': 0.0, 'eye_status': 'หลับตา'}
+2025-06-11 20:56:05 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:56:05 - INFO - 127.0.0.1 - - [11/Jun/2025 20:56:05] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:56:39 - INFO - Starting Flask server
+2025-06-11 20:56:39 - ERROR - Display not available: OpenCV(4.11.0) D:\a\opencv-python\opencv-python\opencv\modules\highgui\src\window.cpp:1284: error: (-2:Unspecified error) The function is not implemented. Rebuild the library with Windows, GTK+ 2.x or Cocoa support. If you are on Ubuntu or Debian, install libgtk2.0-dev and pkg-config, then re-run cmake or configure script in function 'cvNamedWindow'
+
+2025-06-11 20:56:39 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-06-11 20:56:39 - INFO - [33mPress CTRL+C to quit[0m
+2025-06-11 20:56:58 - INFO - 127.0.0.1 - - [11/Jun/2025 20:56:58] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:56:58 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:56:58 - DEBUG - Analysis result: {'behavior': 'เงยหน้า', 'pitch': 89.5, 'yaw': 0.6, 'roll': 1.2, 'eye_status': 'หลับตา'}
+2025-06-11 20:56:58 - INFO - Successfully analyzed behavior: เงยหน้า
+2025-06-11 20:56:58 - INFO - 127.0.0.1 - - [11/Jun/2025 20:56:58] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:57:01 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:57:02 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 86.4, 'yaw': -2.8, 'roll': 0.0, 'eye_status': 'หลับตา'}
+2025-06-11 20:57:02 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:57:02 - INFO - 127.0.0.1 - - [11/Jun/2025 20:57:02] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:57:04 - INFO - 127.0.0.1 - - [11/Jun/2025 20:57:04] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:57:04 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:57:05 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 93.9, 'yaw': 27.3, 'roll': -4.1, 'eye_status': 'ลืมตา'}
+2025-06-11 20:57:05 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:57:05 - INFO - 127.0.0.1 - - [11/Jun/2025 20:57:05] "POST /api/analyze HTTP/1.1" 200 -
+2025-06-11 20:57:08 - DEBUG - Received request data: dict_keys(['image'])
+2025-06-11 20:57:08 - DEBUG - Analysis result: {'behavior': 'ปกติ', 'pitch': 88.4, 'yaw': -0.5, 'roll': 0.0, 'eye_status': 'หลับตา'}
+2025-06-11 20:57:08 - INFO - Successfully analyzed behavior: ปกติ
+2025-06-11 20:57:08 - INFO - 127.0.0.1 - - [11/Jun/2025 20:57:08] "POST /api/analyze HTTP/1.1" 200 -
