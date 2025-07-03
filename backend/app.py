@@ -29,13 +29,13 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-# ปรับปรุงการตั้งค่า logging
-logging.basicConfig(
-    filename='logs/behavior_analysis.log',
-    level=logging.DEBUG,  # เปลี่ยนเป็น DEBUG เพื่อดูรายละเอียดมากขึ้น
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+ # ปรับปรุงการตั้งค่า logging
+# logging.basicConfig(
+#     filename='logs/behavior_analysis.log',
+#     level=logging.DEBUG,  #  DEBUG เพื่อดูรายละเอียดมากขึ้น
+#     format='%(asctime)s - %(levelname)s - %(message)s',
+#     datefmt='%Y-%m-%d %H:%M:%S'
+# )
 
 # สร้างโฟลเดอร์ logs ถ้ายังไม่มี
 if not os.path.exists('logs'):

@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Face Detection App</title>
     <link rel="stylesheet" href="styles.css">
+
 </head>
+
 <body>
     <div class="container">
         <h1>Face Detection App</h1>
@@ -15,13 +18,25 @@
         <div class="loader" id="loader"></div>
         <div class="video-container">
             <video id="myVideo" autoplay muted></video>
+            <input type="range" id="videoProgress" min="0" value="0" step="0.01" style="width:100%;">
+            <div style="display:flex;justify-content:space-between;font-size:14px;color:#fff;margin-top:2px;">
+                <span id="currentTime">00:00</span>
+                <span id="totalTime">00:00</span>
+            </div>
+        </div>
+        <div style="width:100%;max-width:900px;margin:0 auto 30px;">
+            <canvas id="emotionChart" height="200"></canvas>
         </div>
         <div id="snapshotContainer"></div>
+        <div id="emotionStatus"></div>
         <div id="status"></div>
     </div>
-    
+
     <!-- Load scripts at the end of body -->
     <script src="face-api.min.js"></script>
     <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
 </body>
+
 </html>

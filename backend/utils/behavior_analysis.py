@@ -1,14 +1,14 @@
 import cv2
 import dlib
 import numpy as np
-from .debug_visualizer import DebugVisualizer
+import logging
 
 # โหลด predictor
 class BehaviorAnalyzer:
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor("model/shape_predictor_68_face_landmarks.dat")
-        self.debugger = DebugVisualizer()
+        self.ear_history = []
 
     def shape_to_np(self, shape):
         return np.array([[p.x, p.y] for p in shape.parts()])
@@ -23,6 +23,7 @@ class BehaviorAnalyzer:
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         rects = self.detector(gray)
 
+
         if not rects:
             result = {
                 'behavior': 'ไม่อยู่หน้าจอ',
@@ -31,7 +32,6 @@ class BehaviorAnalyzer:
                 'roll': None,
                 'eye_status': None
             }
-            self.debugger.draw_debug_info(frame, None, result)
             return result
 
         shape = self.predictor(gray, rects[0])
@@ -47,7 +47,16 @@ class BehaviorAnalyzer:
         left_ear = self.get_eye_aspect_ratio(coords[36:42])  # เรียกใช้เมธอดผ่าน self
         right_ear = self.get_eye_aspect_ratio(coords[42:48])
         avg_ear = (left_ear + right_ear) / 2.0
-        eye_status = 'หลับตา' if avg_ear < 0.31 else 'ลืมตา'
+        logging.debug(f"EAR: left={left_ear:.3f}, right={right_ear:.3f}, avg={avg_ear:.3f}")
+        EAR_THRESHOLD = 0.18
+        HISTORY_LENGTH = 5
+        self.ear_history.append(avg_ear)
+        if len(self.ear_history) > HISTORY_LENGTH:
+            self.ear_history.pop(0)
+        if all(ear < EAR_THRESHOLD for ear in self.ear_history):
+            eye_status = 'หลับตา'
+        else:
+            eye_status = 'ลืมตา'
 
         # Pitch, Yaw, Roll
         dx = right_eye[0][0] - left_eye[3][0]
@@ -63,7 +72,7 @@ class BehaviorAnalyzer:
         yaw = np.degrees(np.arctan2(nose_tip[0] - mid_eye_x, nose_tip[1] - mid_eye_y))
 
         # Behavior
-        behavior = 'ปกติ'
+        behavior = 'หน้าตรง'
         if pitch >= 94 and pitch <= 96:
             behavior = 'ก้มหน้า'
         elif pitch >= 89 and pitch <= 91:
@@ -84,8 +93,6 @@ class BehaviorAnalyzer:
             'roll': round(roll, 1),
             'eye_status': eye_status
         }
-        
-        self.debugger.draw_debug_info(frame, coords, result)
         return result
 
 # Create analyzer instance

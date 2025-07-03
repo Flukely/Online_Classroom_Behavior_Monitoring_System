@@ -1,11 +1,35 @@
+// ================== ตัวแปร DOM ==================
 const video = document.getElementById("myVideo");
+const videoProgress = document.getElementById("videoProgress");
+const currentTimeSpan = document.getElementById("currentTime");
+const totalTimeSpan = document.getElementById("totalTime");
 
+// ================== โหลดโมเดล face-api ==================
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri("./models"),
   faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
   faceapi.nets.faceRecognitionNet.loadFromUri("./models"),
   faceapi.nets.faceExpressionNet.loadFromUri("./models"),
 ]).then(startVideoUpload);
+
+// ================== ฟังก์ชันแปลงเวลา ==================
+function formatTime(sec) {
+  if (isNaN(sec)) return "00:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
+// ================== UI เวลา ==================
+video.addEventListener("loadedmetadata", () => {
+  videoProgress.max = video.duration;
+  totalTimeSpan.textContent = formatTime(video.duration);
+});
+
+video.addEventListener("timeupdate", () => {
+  videoProgress.value = video.currentTime;
+  currentTimeSpan.textContent = formatTime(video.currentTime);
+});
 
 function startVideoUpload() {
   const videoUpload = document.getElementById("videoUpload");
@@ -17,6 +41,7 @@ function startVideoUpload() {
     if (file) {
       video.src = URL.createObjectURL(file);
       video.load();
+      video.play().catch((err) => console.error("ไม่สามารถเล่นวิดีโอ:", err));
     }
   });
 
@@ -27,52 +52,131 @@ function startVideoUpload() {
     return (A + B) / (2.0 * C);
   }
 
+  // ================== กราฟอารมณ์ ==================
+  let chart;
+  let emotionHistory = [];
+  const emotionLabels = [
+    "angry",
+    "disgusted",
+    "fearful",
+    "happy",
+    "neutral",
+    "sad",
+    "surprised",
+  ];
+
+  function initChart() {
+    const ctx = document.getElementById("emotionChart").getContext("2d");
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+      type: "bar", // เปลี่ยนจาก "line" เป็น "bar"
+      data: {
+        labels: [],
+        datasets: emotionLabels.map((label, idx) => ({
+          label,
+          data: [],
+          backgroundColor: [
+            "rgba(231,76,60,0.7)",
+            "rgba(39,174,96,0.7)",
+            "rgba(142,68,173,0.7)",
+            "rgba(241,196,15,0.7)",
+            "rgba(149,165,166,0.7)",
+            "rgba(52,152,219,0.7)",
+            "rgba(255,152,0,0.7)",
+          ][idx],
+          borderColor: [
+            "#e74c3c",
+            "#27ae60",
+            "#8e44ad",
+            "#f1c40f",
+            "#95a5a6",
+            "#3498db",
+            "#ff9800",
+          ][idx],
+          borderWidth: 1,
+        })),
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: "top",
+            labels: {
+              font: { size: 16 },
+              boxWidth: 24,
+              padding: 20,
+            },
+          },
+          title: {
+            display: true,
+            text: "กราฟแสดงอารมณ์ตามเวลา (Bar Chart)",
+            font: { size: 20 },
+          },
+        },
+        scales: {
+          x: {
+            title: { display: true, text: "เวลา (วินาที)", font: { size: 16 } },
+            stacked: false, // ถ้าอยาก stacked ให้เปลี่ยนเป็น true
+            ticks: { font: { size: 14 } },
+            grid: { color: "rgba(200,200,200,0.2)" },
+          },
+          y: {
+            min: 0,
+            max: 100,
+            title: {
+              display: true,
+              text: "ความมั่นใจ (%)",
+              font: { size: 16 },
+            },
+            ticks: { font: { size: 14 } },
+            grid: { color: "rgba(200,200,200,0.2)" },
+          },
+        },
+      },
+    });
+
+    emotionHistory = [];
+  }
+
+  // ================== เมื่อ video เล่น ==================
   video.addEventListener("play", () => {
     if (canvas) canvas.remove();
+    canvas = null;
 
-    if (video.videoWidth === 0 || video.videoHeight === 0) {
-      video.addEventListener("loadedmetadata", startDetection, { once: true });
+    initChart();
+
+    if (video.readyState < 2) {
+      video.addEventListener("canplay", startDetection, { once: true });
     } else {
       startDetection();
     }
+  });
 
-    function startDetection() {
-      canvas = faceapi.createCanvasFromMedia(video);
-      document.querySelector(".video-container").appendChild(canvas);
+  function startDetection() {
+    const displaySize = { width: video.videoWidth, height: video.videoHeight };
+    canvas = faceapi.createCanvasFromMedia(video);
+    document.querySelector(".video-container").appendChild(canvas);
 
-      const displaySize = {
-        width: video.videoWidth,
-        height: video.videoHeight,
-      };
+    Object.assign(canvas.style, {
+      position: "absolute",
+      top: "0",
+      left: "0",
+      width: displaySize.width + "px",
+      height: displaySize.height + "px",
+    });
 
-      canvas.width = displaySize.width;
-      canvas.height = displaySize.height;
-      canvas.style.width = "100%";
-      canvas.style.height = "100%";
-      canvas.style.position = "absolute";
-      canvas.style.top = "0";
-      canvas.style.left = "0";
+    faceapi.matchDimensions(canvas, displaySize);
 
-      faceapi.matchDimensions(canvas, displaySize, true);
+    const earHistory = {};
+    const HISTORY_LENGTH = 5;
+    let lastSnapshotSec = -1;
+    let isFetching = false;
 
-      const rollHistory = {},
-        pitchHistory = {},
-        yawHistory = {};
-      const HISTORY_LENGTH = 5;
-      let lastSnapshotTime = 0;
-      const SNAPSHOT_INTERVAL = 3000;
-      let isVideoPlaying = true;
-
-      video.addEventListener("ended", () => {
-        isVideoPlaying = false;
-      });
-
-      async function onFrame() {
-        if (!isVideoPlaying) {
-          return;
-        }
-
-        if (video.videoWidth === 0 || video.videoHeight === 0) {
+    async function onFrame() {
+      try {
+        if (video.paused || video.ended) {
           requestAnimationFrame(onFrame);
           return;
         }
@@ -88,43 +192,21 @@ function startVideoUpload() {
           .withFaceLandmarks()
           .withFaceExpressions();
 
-        const resizedDetections = faceapi.resizeResults(detections, {
-          width: canvas.width,
-          height: canvas.height,
-        });
-
+        const resizedDetections = faceapi.resizeResults(
+          detections,
+          displaySize
+        );
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         faceapi.draw.drawDetections(canvas, resizedDetections, {
           withScore: false,
         });
-
-        resizedDetections.forEach((det) => {
-          const landmarks = det.landmarks;
-          const positions = landmarks.positions;
-
-          ctx.save();
-          ctx.fillStyle = "rgba(255, 0, 0, 0.8)";
-          ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 1;
-
-          positions.forEach((pt) => {
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 2, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
-          });
-
-          ctx.restore();
-        });
-
+        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
         faceapi.draw.drawFaceExpressions(canvas, resizedDetections, {
           minConfidence: 0.1,
           fontSize: 14,
         });
-
-        const now = Date.now();
 
         resizedDetections.forEach((detection, i) => {
           const box = detection.detection.box;
@@ -153,101 +235,69 @@ function startVideoUpload() {
               180) /
             Math.PI;
 
-          if (!rollHistory[i]) rollHistory[i] = [];
-          if (!pitchHistory[i]) pitchHistory[i] = [];
-          if (!yawHistory[i]) yawHistory[i] = [];
-
-          rollHistory[i].push(roll);
-          pitchHistory[i].push(pitch);
-          yawHistory[i].push(yaw);
-
-          if (rollHistory[i].length > HISTORY_LENGTH) rollHistory[i].shift();
-          if (pitchHistory[i].length > HISTORY_LENGTH) pitchHistory[i].shift();
-          if (yawHistory[i].length > HISTORY_LENGTH) yawHistory[i].shift();
-
-          const avgRoll =
-            rollHistory[i].reduce((a, b) => a + b, 0) / rollHistory[i].length;
-          const avgPitch =
-            pitchHistory[i].reduce((a, b) => a + b, 0) / pitchHistory[i].length;
-          const avgYaw =
-            yawHistory[i].reduce((a, b) => a + b, 0) / yawHistory[i].length;
-
-          const leftEAR = getEAR(leftEye);
-          const rightEAR = getEAR(rightEye);
-          const avgEAR = (leftEAR + rightEAR) / 2.0;
-
-          const EAR_THRESHOLD = 0.31;
-          const eyeStatus = avgEAR < EAR_THRESHOLD ? "หลับตา" : "ลืมตา";
+          const avgEAR = (getEAR(leftEye) + getEAR(rightEye)) / 2;
+          const isClosed = avgEAR < 0.18;
 
           let posture = "ปกติ";
-          if (avgPitch >= 94 && avgPitch <= 95) posture = "ก้มหน้า";
-          else if (avgPitch >= 89 && avgPitch <= 90) posture = "เงยหน้า";
-          else if (avgYaw >= 29 && avgYaw <= 31) posture = "หันซ้าย";
-          else if (avgYaw >= -27 && avgYaw <= -25) posture = "หันขวา";
-          else if (avgRoll >= 39 && avgRoll <= 41) posture = "เอียงซ้าย";
-          else if (avgRoll >= -29 && avgRoll <= -27) posture = "เอียงขวา";
+          if (pitch >= 94 && pitch <= 95) posture = "ก้มหน้า";
+          else if (pitch >= 89 && pitch <= 90) posture = "เงยหน้า";
+          else if (yaw >= 29 && yaw <= 31) posture = "หันซ้าย";
+          else if (yaw >= -27 && yaw <= -25) posture = "หันขวา";
+          else if (roll >= 39 && roll <= 41) posture = "เอียงซ้าย";
+          else if (roll >= -29 && roll <= -27) posture = "เอียงขวา";
 
-          ctx.fillStyle = "white";
-          ctx.strokeStyle = "black";
-          ctx.lineWidth = 2;
-          ctx.font = "bold 14px Arial";
-
-          function drawTextWithOutline(text, x, y) {
+          const drawText = (text, x, y) => {
+            ctx.strokeStyle = "black";
+            ctx.fillStyle = "white";
+            ctx.lineWidth = 2;
+            ctx.font = "bold 14px Arial";
             ctx.strokeText(text, x, y);
             ctx.fillText(text, x, y);
-          }
+          };
 
-          drawTextWithOutline(
-            `Eye: ${eyeStatus}`,
+          drawText(
+            `Eye: ${isClosed ? "หลับตา" : "ลืมตา"}`,
             box.x,
             box.y + box.height + 20
           );
-          drawTextWithOutline(
-            `Roll: ${avgRoll.toFixed(1)}°`,
-            box.x,
-            box.y - 30
-          );
-          drawTextWithOutline(
-            `Pitch: ${avgPitch.toFixed(1)}°`,
-            box.x,
-            box.y - 10
-          );
-          drawTextWithOutline(`Yaw: ${avgYaw.toFixed(1)}°`, box.x, box.y + 10);
-          drawTextWithOutline(
-            `Posture: ${posture}`,
-            box.x,
-            box.y + box.height + 40
-          );
+          drawText(`Posture: ${posture}`, box.x, box.y + box.height + 40);
 
-          if (isVideoPlaying && now - lastSnapshotTime > SNAPSHOT_INTERVAL) {
-            const sw = 500;
-            const sh = 600;
+          const nowSec = Math.floor(video.currentTime);
+          if (nowSec % 20 === 0 && nowSec !== lastSnapshotSec && !isFetching) {
+            lastSnapshotSec = nowSec;
+
+            const sw = 500,
+              sh = 600;
             const sx = Math.max(0, box.x + box.width / 2 - sw / 2);
             const sy = Math.max(0, box.y + box.height / 2 - sh / 2);
-
-            const snapshotWrapper = document.createElement("div");
-            snapshotWrapper.className = "snapshot-wrapper";
 
             const tempCanvas = document.createElement("canvas");
             tempCanvas.width = sw;
             tempCanvas.height = sh;
             const tempCtx = tempCanvas.getContext("2d");
-
             tempCtx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+
+            const snapshotWrapper = document.createElement("div");
             const img = document.createElement("img");
             img.src = tempCanvas.toDataURL("image/png");
-            img.alt = `snapshot-face-${i + 1}`;
-            img.title = `บุคคลที่ ${i + 1} (ใบหน้า)`;
             img.className = "snapshot";
-
             snapshotWrapper.appendChild(img);
-            snapshotContainer.appendChild(snapshotWrapper);
+
+            const sorted = Object.entries(detection.expressions || {}).sort(
+              (a, b) => b[1] - a[1]
+            );
+            const [mainEmotion, mainScore] = sorted[0] || ["neutral", 0];
+            const emotionDiv = document.createElement("div");
+            emotionDiv.innerHTML = `อารมณ์: ${mainEmotion} (${(
+              mainScore * 100
+            ).toFixed(1)}%)`;
+            snapshotWrapper.appendChild(emotionDiv);
+
+            isFetching = true;
 
             fetch("http://127.0.0.1:5000/api/analyze", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 image: tempCanvas.toDataURL("image/png"),
               }),
@@ -255,31 +305,45 @@ function startVideoUpload() {
               .then((res) => res.json())
               .then((data) => {
                 const analysisDiv = document.createElement("div");
-                analysisDiv.className = "analysis-result";
-
                 analysisDiv.innerHTML = `
-                  <div class="analysis-header">วิเคราะห์จาก AI (Backend)</div>
-                  <div class="analysis-item">ท่าทาง: ${data.behavior}</div>
-                  <div class="analysis-item">สถานะตา: ${data.eye_status}</div>
-                  <div class="analysis-item">Roll: ${data.roll?.toFixed(1)}°</div>
-                  <div class="analysis-item">Pitch: ${data.pitch?.toFixed(1)}°</div>
-                  <div class="analysis-item">Yaw: ${data.yaw?.toFixed(1)}°</div>
-                `;
-
+                  <b>วิเคราะห์จาก Backend:</b><br>
+                  ท่าทาง: ${data.behavior}<br>
+                  สถานะตา: ${data.eye_status}<br>
+                  Roll: ${data.roll?.toFixed(1)}°<br>
+                  Pitch: ${data.pitch?.toFixed(1)}°<br>
+                  Yaw: ${data.yaw?.toFixed(1)}°`;
                 snapshotWrapper.appendChild(analysisDiv);
+                isFetching = false;
               })
               .catch((err) => {
-                console.error("Error sending to backend:", err);
+                console.error("❌ fetch error:", err);
+                isFetching = false;
               });
 
-            lastSnapshotTime = now;
+            snapshotContainer.appendChild(snapshotWrapper);
+
+            if (detection.expressions) {
+              const dataPoint = { time: nowSec };
+              emotionLabels.forEach((label) => {
+                dataPoint[label] = (detection.expressions[label] || 0) * 100;
+              });
+              emotionHistory.push(dataPoint);
+              chart.data.labels.push(nowSec);
+              chart.data.datasets.forEach((ds) => {
+                ds.data.push(dataPoint[ds.label]);
+              });
+              chart.update("none");
+            }
           }
         });
-
-        requestAnimationFrame(onFrame);
+      } catch (err) {
+        console.error("❌ onFrame error:", err);
+        isFetching = false;
       }
 
-      onFrame();
+      requestAnimationFrame(onFrame);
     }
-  });
+
+    onFrame();
+  }
 }
