@@ -3446,3 +3446,16 @@
 2025-07-03 09:18:45 - DEBUG - Analysis result: {'behavior': 'หน้าตรง', 'pitch': 85.4, 'yaw': -7.6, 'roll': -3.2, 'eye_status': 'ลืมตา'}
 2025-07-03 09:18:45 - INFO - Successfully analyzed behavior: หน้าตรง
 2025-07-03 09:18:45 - INFO - 127.0.0.1 - - [03/Jul/2025 09:18:45] "POST /api/analyze HTTP/1.1" 200 -
+2025-07-13 13:45:31 - INFO - Starting Flask server
+2025-07-13 13:45:31 - INFO - Display is available
+2025-07-13 13:45:31 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-13 13:45:31 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-13 13:45:33 - INFO - 127.0.0.1 - - [13/Jul/2025 13:45:33] "[33mGET / HTTP/1.1[0m" 404 -
+2025-07-13 13:45:33 - INFO - 127.0.0.1 - - [13/Jul/2025 13:45:33] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-13 13:48:52 - INFO - 127.0.0.1 - - [13/Jul/2025 13:48:52] "OPTIONS /api/analyze HTTP/1.1" 200 -
+2025-07-13 13:48:52 - DEBUG - Received request data: dict_keys(['image'])
+2025-07-13 13:48:52 - DEBUG - EAR: left=0.240, right=0.213, avg=0.227
+2025-07-13 13:48:52 - DEBUG - Analysis result: {'behavior': 'หน้าตรง', 'pitch': 89.0, 'yaw': 0.5, 'roll': -2.5, 'eye_status': 'ลืมตา'}
+2025-07-13 13:48:52 - INFO - Successfully analyzed behavior: หน้าตรง
+2025-07-13 13:48:52 - INFO - 127.0.0.1 - - [13/Jul/2025 13:48:52] "POST /api/analyze HTTP/1.1" 200 -

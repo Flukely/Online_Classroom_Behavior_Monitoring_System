@@ -67,13 +67,19 @@ input[type="file"]:hover {
 }
 
 .video-container {
-    width: 100%;
-    max-width: 1500px;
-    margin: 0 auto 30px;
     position: relative;
-    background-color: #000;
-    border-radius: 8px;
+    background: #000;
     overflow: hidden;
+}
+.video-container video,
+.video-container canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 video {

@@ -22,9 +22,21 @@ function formatTime(sec) {
 
 // ================== UI เวลา ==================
 video.addEventListener("loadedmetadata", () => {
-  videoProgress.max = video.duration;
-  totalTimeSpan.textContent = formatTime(video.duration);
-});
+  // ปรับขนาด container ให้สัมพันธ์กับวิดีโอจริง
+  const container = document.querySelector(".video-container");
+  container.style.width = video.videoWidth + "px";
+  container.style.height = video.videoHeight + "px";
+
+  // ปรับขนาด video และ canvas ให้ตรงกัน
+  video.width = video.videoWidth;
+  video.height = video.videoHeight;
+  if (canvas) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.style.width = video.videoWidth + "px";
+    canvas.style.height = video.videoHeight + "px";
+  }
+});;
 
 video.addEventListener("timeupdate", () => {
   videoProgress.value = video.currentTime;
@@ -262,8 +274,13 @@ function startVideoUpload() {
           );
           drawText(`Posture: ${posture}`, box.x, box.y + box.height + 40);
 
-          const nowSec = Math.floor(video.currentTime);
-          if (nowSec % 20 === 0 && nowSec !== lastSnapshotSec && !isFetching) {
+           const nowSec = Math.floor(video.currentTime);
+          if (
+            nowSec % 10 === 0 &&
+            nowSec !== lastSnapshotSec &&
+            !isFetching &&
+            nowSec >= 10 // เพิ่มเงื่อนไขนี้
+          ) {
             lastSnapshotSec = nowSec;
 
             const sw = 500,
