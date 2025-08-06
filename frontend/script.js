@@ -3,6 +3,7 @@ const video = document.getElementById("myVideo");
 const videoProgress = document.getElementById("videoProgress");
 const currentTimeSpan = document.getElementById("currentTime");
 const totalTimeSpan = document.getElementById("totalTime");
+let canvas;
 
 // ================== โหลดโมเดล face-api ==================
 Promise.all([
@@ -22,12 +23,9 @@ function formatTime(sec) {
 
 // ================== UI เวลา ==================
 video.addEventListener("loadedmetadata", () => {
-  // ปรับขนาด container ให้สัมพันธ์กับวิดีโอจริง
   const container = document.querySelector(".video-container");
   container.style.width = video.videoWidth + "px";
   container.style.height = video.videoHeight + "px";
-
-  // ปรับขนาด video และ canvas ให้ตรงกัน
   video.width = video.videoWidth;
   video.height = video.videoHeight;
   if (canvas) {
@@ -43,11 +41,165 @@ video.addEventListener("timeupdate", () => {
   currentTimeSpan.textContent = formatTime(video.currentTime);
 });
 
+function plotChartsFromCSV(data) {
+  const groupMap = {
+    neutral: "กลาง (Neutral)",
+    sad: "ลบ (Negative)",
+    fearful: "ลบ (Negative)",
+    disgusted: "ลบ (Negative)",
+    angry: "ลบ (Negative)",
+    happy: "บวก (Positive)",
+    surprised: "บวก (Positive)",
+  };
+  const outScreenLabel = "ไม่อยู่หน้าจอ";
+
+  const timeLabels = [];
+  const groupLabels = [];
+  for (const row of data) {
+    if (row.emotion && row.emotion.trim() !== "") {
+      let group = groupMap[row.emotion.trim()] || "กลาง (Neutral)";
+      groupLabels.push(group);
+    } else if (row.behavior === outScreenLabel) {
+      groupLabels.push(outScreenLabel);
+    } else {
+      groupLabels.push("กลาง (Neutral)");
+    }
+    timeLabels.push(row.time || "");
+  }
+
+  const count = {
+    "บวก (Positive)": 0,
+    "กลาง (Neutral)": 0,
+    "ลบ (Negative)": 0,
+    [outScreenLabel]: 0,
+  };
+  for (const group of groupLabels) {
+    if (count[group] !== undefined) count[group]++;
+    else count["กลาง (Neutral)"]++;
+  }
+  const total = groupLabels.length || 1;
+
+  let yLabels = [
+    "บวก (Positive)",
+    "กลาง (Neutral)",
+    "ลบ (Negative)",
+    outScreenLabel,
+  ];
+
+  // Line Chart
+  const lineCtx = document.getElementById("emotionLineChart").getContext("2d");
+  if (window.lineChart) window.lineChart.destroy();
+  window.lineChart = new Chart(lineCtx, {
+    type: "line",
+    data: {
+      labels: timeLabels,
+      datasets: [
+        {
+          label: "กลุ่มอารมณ์",
+          data: groupLabels,
+          borderColor: "rgba(75, 192, 192, 1)",
+          tension: 0.1,
+          stepped: true,
+          borderWidth: 3,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: "rgba(75, 192, 192, 1)",
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: "การเปลี่ยนแปลงอารมณ์ตามเวลา",
+          font: { size: 18, weight: "bold" },
+          padding: { top: 10, bottom: 20 },
+          color: "#2c3e50",
+        },
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "เวลา (วินาที)",
+            font: { size: 14, weight: "bold" },
+            color: "#2c3e50",
+          },
+        },
+        y: {
+          type: "category",
+          labels: yLabels,
+          title: {
+            display: true,
+            text: "กลุ่มอารมณ์",
+            font: { size: 14, weight: "bold" },
+            color: "#2c3e50",
+          },
+        },
+      },
+    },
+  });
+
+  // Pie Chart
+  const pieCtx = document.getElementById("emotionPieChart").getContext("2d");
+  if (window.pieChart) window.pieChart.destroy();
+  window.pieChart = new Chart(pieCtx, {
+    type: "pie",
+    data: {
+      labels: yLabels,
+      datasets: [
+        {
+          data: yLabels.map((lbl) => (count[lbl] / total) * 100),
+          backgroundColor: [
+            "rgba(46, 204, 113, 0.9)",
+            "rgba(149, 165, 166, 0.9)",
+            "rgba(231, 76, 60, 0.9)",
+            "rgba(52, 73, 94, 0.9)", // สำหรับ 'ไม่อยู่หน้าจอ'
+          ],
+          borderColor: [
+            "rgba(46, 204, 113, 1)",
+            "rgba(149, 165, 166, 1)",
+            "rgba(231, 76, 60, 1)",
+            "rgba(52, 73, 94, 1)",
+          ],
+          borderWidth: 2,
+          hoverOffset: 15,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            font: { size: 14, weight: "bold" },
+            color: "#2c3e50",
+          },
+        },
+        title: {
+          display: true,
+          text: "สัดส่วนอารมณ์โดยรวม",
+          font: { size: 18, weight: "bold" },
+          padding: { top: 10, bottom: 20 },
+          color: "#2c3e50",
+        },
+      },
+    },
+  });
+}
+
 function startVideoUpload() {
   const videoUpload = document.getElementById("videoUpload");
   const snapshotContainer = document.getElementById("snapshotContainer");
   let canvas;
 
+  fetch("http://127.0.0.1:5000/api/clear_snapshots", { method: "POST" });
   videoUpload.addEventListener("change", () => {
     const file = videoUpload.files[0];
     if (file) {
@@ -64,281 +216,6 @@ function startVideoUpload() {
     return (A + B) / (2.0 * C);
   }
 
-  // ================== กราฟอารมณ์ ==================
-  const emotionGroups = {
-    neutral: ["neutral"],
-    negative: ["sad", "fearful", "disgusted", "angry"],
-    positive: ["happy", "surprised"],
-  };
-
-  let lineChart, pieChart;
-  let emotionHistory = [];
-
-function initCharts() {
-  // Line Chart
-  const lineCtx = document.getElementById('emotionLineChart').getContext('2d');
-  if (lineChart) lineChart.destroy();
-
-  lineChart = new Chart(lineCtx, {
-    type: 'line',
-    data: {
-      labels: [], // เวลา
-      datasets: [{
-        label: 'กลุ่มอารมณ์',
-        data: [], // กลุ่มอารมณ์
-        borderColor: 'rgba(75, 192, 192, 1)',
-        tension: 0.1,
-        stepped: true,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-        fill: false // ปิดการเติมพื้นหลัง
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `อารมณ์: ${context.raw}`;
-            }
-          },
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          titleFont: { 
-            size: 16,
-            weight: 'bold'
-          },
-          bodyFont: { 
-            size: 14,
-            weight: 'bold'
-          },
-          padding: 12,
-          cornerRadius: 8,
-          displayColors: false
-        },
-        title: {
-          display: true,
-          text: 'การเปลี่ยนแปลงอารมณ์ตามเวลา',
-          font: { 
-            size: 18,
-            weight: 'bold'
-          },
-          padding: {
-            top: 10,
-            bottom: 20
-          },
-          color: '#2c3e50'
-        }
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'เวลา (วินาที)',
-            font: { 
-              size: 14,
-              weight: 'bold'
-            },
-            color: '#2c3e50'
-          },
-          grid: {
-            color: 'rgba(0, 0, 0, 0.05)',
-            drawBorder: false
-          },
-          ticks: {
-            font: {
-              size: 12
-            },
-            color: '#7f8c8d'
-          }
-        },
-        y: {
-          type: 'category',
-          labels: ['บวก (Positive)', 'กลาง (Neutral)', 'ลบ (Negative)'],
-          title: {
-            display: true,
-            text: 'กลุ่มอารมณ์',
-            font: { 
-              size: 14,
-              weight: 'bold'
-            },
-            color: '#2c3e50'
-          },
-          grid: {
-            color: 'rgba(0, 0, 0, 0.05)',
-            drawBorder: false
-          },
-          ticks: {
-            font: {
-              size: 12,
-              weight: 'bold'
-            },
-            color: '#7f8c8d'
-          }
-        }
-      },
-      interaction: {
-        intersect: false,
-        mode: 'index'
-      }
-    }
-  });
-
-  // Pie Chart
-  const pieCtx = document.getElementById('emotionPieChart').getContext('2d');
-  if (pieChart) pieChart.destroy();
-
-  pieChart = new Chart(pieCtx, {
-    type: 'pie',
-    data: {
-      labels: ['บวก (Positive)', 'กลาง (Neutral)', 'ลบ (Negative)'],
-      datasets: [{
-        data: [0, 0, 0],
-        backgroundColor: [
-          'rgba(46, 204, 113, 0.9)',  // สีเขียว (Positive)
-          'rgba(149, 165, 166, 0.9)', // สีเทา (Neutral)
-          'rgba(231, 76, 60, 0.9)'    // สีแดง (Negative)
-        ],
-        borderColor: [
-          'rgba(46, 204, 113, 1)',    // สีเขียว (Positive)
-          'rgba(149, 165, 166, 1)',   // สีเทา (Neutral)
-          'rgba(231, 76, 60, 1)'      // สีแดง (Negative)
-        ],
-        borderWidth: 2,
-        hoverOffset: 15
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            font: { 
-              size: 14,
-              weight: 'bold'
-            },
-            padding: 20,
-            usePointStyle: true,
-            pointStyle: 'circle',
-            color: '#2c3e50'
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const label = context.label || '';
-              const value = context.raw || 0;
-              return `${label}: ${value.toFixed(1)}%`;
-            }
-          },
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          titleFont: { 
-            size: 16,
-            weight: 'bold'
-          },
-          bodyFont: { 
-            size: 14,
-            weight: 'bold'
-          },
-          padding: 12,
-          cornerRadius: 8,
-          displayColors: false
-        },
-        title: {
-          display: true,
-          text: 'สัดส่วนอารมณ์โดยรวม',
-          font: { 
-            size: 18,
-            weight: 'bold'
-          },
-          padding: {
-            top: 10,
-            bottom: 20
-          },
-          color: '#2c3e50'
-        }
-      },
-      cutout: '0%', // ไม่ต้องมีช่องว่างกลาง
-      animation: {
-        animateScale: true,
-        animateRotate: true
-      }
-    }
-  });
-
-  emotionHistory = [];
-}
-
-function updateCharts(detection, nowSec) {
-  if (!detection.expressions) return;
-
-  // คำนวณคะแนนของแต่ละกลุ่ม
-  const neutralScore = detection.expressions.neutral || 0;
-  const negativeScore = ['sad', 'fearful', 'disgusted', 'angry']
-    .reduce((sum, emotion) => sum + (detection.expressions[emotion] || 0), 0);
-  const positiveScore = ['happy', 'surprised']
-    .reduce((sum, emotion) => sum + (detection.expressions[emotion] || 0), 0);
-
-  // หากลุ่มที่มีค่ามากที่สุด
-  let dominantGroup;
-  if (neutralScore > negativeScore && neutralScore > positiveScore) {
-    dominantGroup = 'กลาง (Neutral)';
-  } else if (negativeScore > positiveScore) {
-    dominantGroup = 'ลบ (Negative)';
-  } else {
-    dominantGroup = 'บวก (Positive)';
-  }
-
-  // อัพเดท Line Chart
-  lineChart.data.labels.push(nowSec);
-  lineChart.data.datasets[0].data.push(dominantGroup);
-
-  // จำกัดจำนวนข้อมูลที่แสดง (เก็บแค่ 30 จุดล่าสุด)
-  if (lineChart.data.labels.length > 30) {
-    lineChart.data.labels.shift();
-    lineChart.data.datasets[0].data.shift();
-  }
-
-  // อัพเดท Pie Chart
-  const totalTime = lineChart.data.labels.length;
-  const groupCounts = lineChart.data.datasets[0].data.reduce((acc, group) => {
-    acc[group] = (acc[group] || 0) + 1;
-    return acc;
-  }, {});
-
-  pieChart.data.datasets[0].data = [
-    (groupCounts['บวก (Positive)'] || 0) / totalTime * 100,
-    (groupCounts['กลาง (Neutral)'] || 0) / totalTime * 100,
-    (groupCounts['ลบ (Negative)'] || 0) / totalTime * 100
-  ];
-
-  // อัพเดททั้งสองกราฟ
-  lineChart.update('none');
-  pieChart.update('none');
-}
-
-  // แก้ไขส่วน video.addEventListener("play")
-  video.addEventListener("play", () => {
-    if (canvas) canvas.remove();
-    canvas = null;
-
-    initCharts();
-
-    if (video.readyState < 2) {
-      video.addEventListener("canplay", startDetection, { once: true });
-    } else {
-      startDetection();
-    }
-  });
-
   function startDetection() {
     function resizeCanvasToVideo() {
       if (!canvas) return;
@@ -348,11 +225,9 @@ function updateCharts(detection, nowSec) {
       canvas.style.height = video.videoHeight + "px";
     }
 
-    // เรียกใช้เมื่อวิดีโอโหลดหรือขนาดเปลี่ยน
     video.addEventListener("loadedmetadata", resizeCanvasToVideo);
     video.addEventListener("resize", resizeCanvasToVideo);
 
-    // สร้าง canvas ใหม่ทุกครั้งที่เริ่มวิดีโอ
     canvas = faceapi.createCanvasFromMedia(video);
     document.querySelector(".video-container").appendChild(canvas);
     resizeCanvasToVideo();
@@ -369,7 +244,6 @@ function updateCharts(detection, nowSec) {
           return;
         }
 
-        // ตรวจจับใบหน้าและ resize ผลลัพธ์ให้สัมพันธ์กับวิดีโอ
         const detections = await faceapi
           .detectAllFaces(
             video,
@@ -409,12 +283,52 @@ function updateCharts(detection, nowSec) {
         if (resizedDetections.length === 0) {
           if (nowSec % 10 === 0 && nowSec !== lastSnapshotSec && nowSec >= 10) {
             lastSnapshotSec = nowSec;
-            emotionResults.push({
-              time: nowSec,
-              predicted: "",
-              confidence: "",
-              true_label: "ไม่อยู่หน้าจอ",
-            });
+            // ไม่ต้อง push emotionResults เพราะใช้ CSV แล้ว
+            // 1. สร้าง tempCanvas ขนาดเต็มวิดีโอ (หรือขนาดที่ต้องการ)
+            const sw = video.videoWidth;
+            const sh = video.videoHeight;
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = sw;
+            tempCanvas.height = sh;
+            const tempCtx = tempCanvas.getContext("2d");
+            tempCtx.drawImage(video, 0, 0, sw, sh);
+
+            // 2. แสดงใน snapshotContainer
+            const snapshotWrapper = document.createElement("div");
+            const img = document.createElement("img");
+            img.src = tempCanvas.toDataURL("image/png");
+            img.className = "snapshot";
+            snapshotWrapper.appendChild(img);
+
+            const infoDiv = document.createElement("div");
+            infoDiv.innerHTML = `<b>ไม่อยู่หน้าจอ</b> <br>Time: ${nowSec}s`;
+            snapshotWrapper.appendChild(infoDiv);
+
+            document
+              .getElementById("snapshotContainer")
+              .appendChild(snapshotWrapper);
+
+            // 3. ส่งข้อมูลไป backend (สามารถส่งรูป หรือไม่ส่งก็ได้)
+            isFetching = true;
+            fetch("http://127.0.0.1:5000/api/analyze", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                image: tempCanvas.toDataURL("image/png"), // จะส่งรูปเฟรมว่างด้วยก็ได้
+                time: nowSec,
+                emotion: "",
+                confidence: "",
+                behavior: "ไม่อยู่หน้าจอ",
+              }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                // (จะโชว์ result backend เพิ่มก็ได้)
+                isFetching = false;
+              })
+              .catch((err) => {
+                isFetching = false;
+              });
           }
         }
         resizedDetections.forEach((detection, i) => {
@@ -476,7 +390,7 @@ function updateCharts(detection, nowSec) {
             nowSec % 10 === 0 &&
             nowSec !== lastSnapshotSec &&
             !isFetching &&
-            nowSec >= 10 // เพิ่มเงื่อนไขนี้
+            nowSec >= 10
           ) {
             lastSnapshotSec = nowSec;
 
@@ -514,6 +428,9 @@ function updateCharts(detection, nowSec) {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 image: tempCanvas.toDataURL("image/png"),
+                time: nowSec,
+                emotion: mainEmotion,
+                confidence: mainScore,
               }),
             })
               .then((res) => res.json())
@@ -535,17 +452,6 @@ function updateCharts(detection, nowSec) {
               });
 
             snapshotContainer.appendChild(snapshotWrapper);
-
-            if (detection.expressions) {
-              updateCharts(detection, nowSec); // เรียกใช้ฟังก์ชัน updateCharts 
-
-              emotionResults.push({
-                time: nowSec,
-                predicted: mainEmotion,
-                confidence: mainScore,
-                true_label: posture,
-              });
-            }
           }
         });
       } catch (err) {
@@ -558,4 +464,75 @@ function updateCharts(detection, nowSec) {
 
     onFrame();
   }
+
+  video.addEventListener("play", () => {
+    if (canvas) canvas.remove();
+    canvas = null;
+    if (video.readyState < 2) {
+      video.addEventListener("canplay", startDetection, { once: true });
+    } else {
+      startDetection();
+    }
+  });
 }
+
+// ฟังก์ชันโหลดข้อมูลและ plot กราฟ (เรียกเมื่อ load หน้าเว็บหรือกดปุ่ม refresh)
+async function loadSnapshotsAndPlot() {
+  const res = await fetch("http://127.0.0.1:5000/api/snapshots");
+  const csvText = await res.text();
+  const rows = csvText.split("\n").slice(1).filter(Boolean); // ข้าม header
+  const data = rows.map((row) => {
+    const [
+      timestamp,
+      time,
+      emotion,
+      confidence,
+      behavior,
+      eye_status,
+      pitch,
+      yaw,
+      roll,
+    ] = row.split(",");
+    return {
+      timestamp,
+      time,
+      emotion,
+      confidence,
+      behavior,
+      eye_status,
+      pitch,
+      yaw,
+      roll,
+    };
+  });
+
+  // เรียก plotChartsFromCSV เพื่ออัปเดตกราฟ
+  plotChartsFromCSV(data);
+}
+
+// ตัวอย่าง: auto refresh เมื่อเข้าเว็บ
+window.onload = function () {
+  loadSnapshotsAndPlot();
+};
+
+// ตัวอย่าง: ถ้ามีปุ่ม refresh
+document.getElementById("reloadChartBtn").onclick = loadSnapshotsAndPlot;
+
+window.addEventListener("beforeunload", () => {
+  console.log("!! PAGE RELOAD !!");
+});
+
+// ปุ่มล้างข้อมูล snapshot ทั้งหมด
+document.getElementById("clearCsvBtn").onclick = async function () {
+  if (!confirm("ต้องการล้างข้อมูล snapshot ทั้งหมดใช่หรือไม่?")) return;
+  try {
+    const res = await fetch("http://127.0.0.1:5000/api/clear_snapshots", {
+      method: "POST",
+    });
+    if (!res.ok) throw new Error("Clear CSV failed");
+    alert("ล้างข้อมูลสำเร็จ!");
+    loadSnapshotsAndPlot();
+  } catch (err) {
+    alert("ล้างข้อมูลไม่สำเร็จ: " + err);
+  }
+};

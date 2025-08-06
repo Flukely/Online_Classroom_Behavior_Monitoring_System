@@ -15,11 +15,11 @@
         <div class="loader" id="loader"></div>
         <div class="video-container">
             <video id="myVideo" autoplay muted></video>
-            <!-- <input type="range" id="videoProgress" min="0" value="0" step="0.01" style="width:100%;">
+            <input type="range" id="videoProgress" min="0" value="0" step="0.01" style="width:100%;">
             <div style="display:flex;justify-content:space-between;font-size:14px;color:#fff;margin-top:2px;">
                 <span id="currentTime">00:00</span>
                 <span id="totalTime">00:00</span>
-            </div> -->
+            </div>
         </div>
         <div class="charts-container">
             <div class="chart-wrapper">
@@ -29,6 +29,8 @@
                 <canvas id="emotionPieChart"></canvas>
             </div>
         </div>
+        <button id="reloadChartBtn">Refresh Chart</button>
+        <button id="clearCsvBtn" style="background:#e74c3c;color:#fff;">ล้างข้อมูล</button>
         <div id="snapshotContainer"></div>
     </div>
     <script src="face-api.min.js"></script>
