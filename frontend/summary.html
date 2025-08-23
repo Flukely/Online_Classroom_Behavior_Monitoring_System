@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Summary - Emotion Monitor</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .toolbar { display:flex; gap:10px; justify-content:center; margin:10px 0 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>สรุปผลอารมณ์จาก CSV</h1>
+    <div class="toolbar">
+      <a href="index.html"><button type="button">← กลับหน้าตรวจจับ</button></a>
+      <button id="zoom1Btn">Zoom x1 (10 วินาที)</button>
+      <button id="zoom2Btn">Zoom x2 (30 วินาที)</button>
+      <button id="zoom3Btn">Zoom x3 (60 วินาที)</button>
+      <button id="reloadChartBtn">รีเฟรชข้อมูล</button>
+    </div>
+
+    <div class="charts-container">
+      <div class="chart-wrapper">
+        <canvas id="emotionLineChart"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="emotionPieChart"></canvas>
+      </div>
+    </div>
+
+    <p style="text-align:center;color:#666;">ข้อมูลทั้งหมดอ่านจาก <code>logs/emotion_snapshots.csv</code></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="summary.js"></script>
+</body>
+</html>

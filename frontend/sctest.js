@@ -15,11 +15,9 @@ const percentText  = document.getElementById('percentText');
 const elapsedEl    = document.getElementById('elapsed');
 const durationEl   = document.getElementById('duration');
 
-const summaryLink = document.getElementById('summaryLink');
-const processingTitle = document.getElementById('processingTitle');
-
-// ซ่อนวิดีโอเป็นค่าเริ่มต้น
+// ซ่อนวิดีโอเป็นค่าเริ่มต้น (ถ้าอยากให้แสดงเป็นค่าเริ่มต้น ให้เปลี่ยนเป็น true)
 let isVideoVisible = false;
+
 function setVideoVisible(show){
   isVideoVisible = !!show;
   if (isVideoVisible) {
@@ -32,9 +30,26 @@ function setVideoVisible(show){
     toggleVideoBtn.textContent = 'แสดงวิดีโอ';
   }
 }
+
+// ปุ่มสลับ
 if (toggleVideoBtn) {
   toggleVideoBtn.addEventListener('click', () => setVideoVisible(!isVideoVisible));
 }
+
+// ฟังก์ชันอัปเดตเปอร์เซ็นต์
+function updateProgressUI(){
+  const cur = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+  const dur = (Number.isFinite(video.duration) && video.duration > 0) ? video.duration : 0;
+
+  const pct = dur > 0 ? Math.min(100, Math.round((cur / dur) * 100)) : 0;
+  if (progressBar) progressBar.style.width = pct + '%';
+  if (percentText) percentText.textContent = (dur > 0 ? pct : 0) + '%';
+
+  if (elapsedEl)  elapsedEl.textContent  = formatTime(cur);
+  if (durationEl) durationEl.textContent = formatTime(dur);
+}
+
+// ตั้งค่าเริ่มต้น: ซ่อนวิดีโอ โชว์การ์ดเปอร์เซ็นต์
 setVideoVisible(false);
 
 // เพิ่มตัวแปรสำหรับ UI ใหม่
@@ -44,33 +59,42 @@ const liveTag = document.getElementById("liveTag");
 // helper set สถานะ live
 function setLive(state) {
   if (!liveTag) return;
+  // state: 'live' | 'offline' | 'connecting'
   liveTag.dataset.state = state;
-  liveTag.textContent = state === "live" ? "Live" : state === "offline" ? "Offline" : "Connecting…";
+  liveTag.textContent =
+    state === "live" ? "Live" : state === "offline" ? "Offline" : "Connecting…";
 }
 
 // เมื่อเลือกไฟล์ แสดงชื่อไฟล์บน toolbar
 const fileInputEl = document.getElementById("videoUpload");
 if (fileInputEl && fileNameEl) {
   fileInputEl.addEventListener("change", () => {
-    fileNameEl.textContent = fileInputEl.files[0] ? fileInputEl.files[0].name : "ยังไม่เลือกไฟล์";
+    fileNameEl.textContent = fileInputEl.files[0]
+      ? fileInputEl.files[0].name
+      : "ยังไม่เลือกไฟล์";
   });
 }
 
 // ===== Snapshot-driven progress =====
-const SNAP_INTERVAL_SEC = 10;
+const SNAP_INTERVAL_SEC = 10;               // ถ้าเปลี่ยนช่วงเก็บสแนป ปรับค่านี้
 const snapCountEl = document.getElementById('snapCount');
 
-let expectedSnapshots = 0; // Y
-let savedSnapshots = 0;    // X
+let expectedSnapshots = 0;                  // Y
+let savedSnapshots = 0;                     // X
 
 function computeExpectedSnapshots() {
+  // เก็บที่ 10 วิ, จุดแรกเริ่มที่ 10 วินาที: 10,20,30,...
+  // ดังนั้นจำนวนที่คาด = floor(duration / 10)
   const dur = Number.isFinite(video.duration) ? video.duration : 0;
   expectedSnapshots = Math.max(0, Math.floor(dur / SNAP_INTERVAL_SEC));
 }
+
 function updateProgressFromSnapshots() {
+  // เปอร์เซ็นต์คิดจาก X/Y; ถ้า Y=0 ให้เป็น 0%
   const pct = expectedSnapshots > 0
     ? Math.min(100, Math.round((savedSnapshots / expectedSnapshots) * 100))
     : 0;
+
   if (progressBar)  progressBar.style.width = pct + '%';
   if (percentText)  percentText.textContent = pct + '%';
   if (snapCountEl)  snapCountEl.textContent = `${savedSnapshots}/${expectedSnapshots}`;
@@ -78,15 +102,16 @@ function updateProgressFromSnapshots() {
 
 // --- ผูกกับ metadata ของวิดีโอ เพื่อคำนวณ Y ---
 video.addEventListener("loadedmetadata", () => {
-  computeExpectedSnapshots();
-  if (durationEl) durationEl.textContent = formatTime(video.duration || 0);
-  updateProgressFromSnapshots(); // แสดง 0/Y
+  expectedSnapshots = Math.max(0, Math.floor((video.duration || 0) / SNAP_INTERVAL_SEC));
+  durationEl && (durationEl.textContent = formatTime(video.duration || 0));
+  updateProgressFromSnapshots();   // แสดง 0/Y
 });
 
-// --- เมื่อเวลาเดิน ให้แสดง elapsed ---
+// --- เมื่อเวลาเดิน ให้แสดง elapsed (ส่วนเปอร์เซ็นต์ใช้สแนปขับเคลื่อน) ---
 video.addEventListener('timeupdate', () => {
-  if (elapsedEl) elapsedEl.textContent = formatTime(video.currentTime || 0);
+  elapsedEl && (elapsedEl.textContent = formatTime(video.currentTime || 0));
 });
+
 
 // === Debug Snapshot Panel ===
 const debugPanel = document.getElementById("debugPanel");
@@ -94,11 +119,16 @@ const toggleDebugBtn = document.getElementById("toggleDebugBtn");
 const clearDebugBtn = document.getElementById("clearDebugBtn");
 const snapshotContainer = document.getElementById("snapshotContainer");
 
-if (toggleDebugBtn) toggleDebugBtn.onclick = () => debugPanel.classList.toggle("hidden");
-if (clearDebugBtn) clearDebugBtn.onclick = () => { if (snapshotContainer) snapshotContainer.innerHTML = ""; };
+if (toggleDebugBtn)
+  toggleDebugBtn.onclick = () => debugPanel.classList.toggle("hidden");
+if (clearDebugBtn)
+  clearDebugBtn.onclick = () => {
+    if (snapshotContainer) snapshotContainer.innerHTML = "";
+  };
 
 const MAX_SNAPSHOTS = 24;
-const deg = (x) => x === undefined || x === null || x === "" ? "-" : `${Number(x).toFixed(1)}°`;
+const deg = (x) =>
+  x === undefined || x === null || x === "" ? "-" : `${Number(x).toFixed(1)}°`;
 
 function addSnapshotCard(info) {
   if (!snapshotContainer) return;
@@ -115,35 +145,19 @@ function addSnapshotCard(info) {
   meta.innerHTML = `
     <b>t = ${info.time ?? 0}s</b>
     อารมณ์: ${info.emotion || "-"} ${
-      info.confidence !== undefined && info.confidence !== ""
-        ? `(${(Number(info.confidence) * 100).toFixed(1)}%)`
-        : ""
-    }<br>
+    info.confidence !== undefined && info.confidence !== ""
+      ? `(${(Number(info.confidence) * 100).toFixed(1)}%)`
+      : ""
+  }<br>
     ท่าทาง: ${info.behavior || "-"}<br>
     ตา: ${info.eye_status || "-"}<br>
     R/P/Y: ${deg(info.roll)} / ${deg(info.pitch)} / ${deg(info.yaw)}
   `;
   card.appendChild(meta);
 
-  snapshotContainer.prepend(card);
+  snapshotContainer.prepend(card); // โชว์รายการล่าสุดไว้บนสุด
   while (snapshotContainer.children.length > MAX_SNAPSHOTS) {
     snapshotContainer.lastChild.remove();
-  }
-}
-
-function updateProgressFromSnapshots() {
-  const pct = expectedSnapshots > 0
-    ? Math.min(100, Math.round((savedSnapshots / expectedSnapshots) * 100))
-    : 0;
-
-  if (progressBar)  progressBar.style.width = pct + '%';
-  if (percentText)  percentText.textContent = pct + '%';
-  if (snapCountEl)  snapCountEl.textContent = `${savedSnapshots}/${expectedSnapshots}`;
-
-  // ✅ เมื่อครบ 100% ให้ขึ้นข้อความสำเร็จ + เปิดปุ่มสรุปข้อมูล
-  if (pct === 100) {
-    if (processingTitle) processingTitle.textContent = 'วิเคราะห์สำเร็จ';
-    if (summaryLink) summaryLink.classList.remove('hidden');
   }
 }
 
@@ -197,6 +211,7 @@ const EMO_GROUP = {
   happy: "บวก (Positive)",
   surprised: "บวก (Positive)",
 };
+
 function toGroup(row) {
   if (row.emotion && row.emotion.trim() !== "")
     return EMO_GROUP[row.emotion.trim()] || "กลาง (Neutral)";
@@ -205,7 +220,7 @@ function toGroup(row) {
 }
 
 let lineChart, pieChart;
-let lineX = [];       // เวลา (วินาที)
+let lineX = []; // เวลา (วินาที)
 let lineYLabels = []; // ชื่อกลุ่มอารมณ์ (สตริง)
 let pieCounts = {
   "บวก (Positive)": 0,
@@ -213,6 +228,7 @@ let pieCounts = {
   "ลบ (Negative)": 0,
   "ไม่อยู่หน้าจอ": 0,
 };
+
 function initCharts() {
   const lctx = document.getElementById("emotionLineChart").getContext("2d");
   if (lineChart) lineChart.destroy();
@@ -223,7 +239,7 @@ function initCharts() {
       datasets: [
         {
           label: "กลุ่มอารมณ์",
-          data: lineYLabels, // ใช้สตริง
+          data: lineYLabels, // <-- ใช้สตริง
           borderColor: "rgba(75, 192, 192, 1)",
           pointBackgroundColor: "rgba(75, 192, 192, 1)",
           borderWidth: 3,
@@ -292,10 +308,10 @@ function initCharts() {
 
 function pushSnapshot(row) {
   const t = Number(row.time || 0);
-  const g = toGroup(row);
+  const g = toGroup(row); // ได้ชื่อกลุ่ม (สตริง)
 
   lineX.push(t);
-  lineYLabels.push(g);
+  lineYLabels.push(g); // <-- เก็บสตริงเหมือน summary
   if (lineX.length > 300) {
     lineX.shift();
     lineYLabels.shift();
@@ -304,22 +320,48 @@ function pushSnapshot(row) {
   pieCounts[g] = (pieCounts[g] || 0) + 1;
 
   lineChart.data.labels = lineX;
-  lineChart.data.datasets[0].data = lineYLabels;
+  lineChart.data.datasets[0].data = lineYLabels; // <-- อัปเดตด้วยสตริง
   lineChart.update();
 
   pieChart.data.datasets[0].data = GROUP_LABELS.map((lbl) => pieCounts[lbl]);
   pieChart.update();
 }
 
-// กันนับซ้ำต่อเวลา snapshot เช่น 10, 20, 30, ...
-const countedTimes = new Set();
-function bumpProgressOnce(t) {
-  const key = String(Math.floor(Number(t) || 0));
-  if (countedTimes.has(key)) return;   // เคยนับแล้ว -> ไม่เพิ่มซ้ำ
-  countedTimes.add(key);
-  savedSnapshots += 1;
-  updateProgressFromSnapshots();
-}
+// ====== bootstrap: โหลดข้อมูลเดิม + ต่อ SSE ======
+(async function bootstrapRealtime() {
+  initCharts();
+
+  // เติมจาก CSV ครั้งแรก
+  const txt = await (await fetch("http://127.0.0.1:5000/api/snapshots")).text();
+  txt
+    .split("\n")
+    .slice(1)
+    .filter(Boolean)
+    .forEach((line) => {
+      const [
+        timestamp,
+        time,
+        emotion,
+        confidence,
+        behavior,
+        eye_status,
+        pitch,
+        yaw,
+        roll,
+      ] = line.split(",");
+      pushSnapshot({
+        timestamp,
+        time,
+        emotion,
+        confidence,
+        behavior,
+        eye_status,
+        pitch,
+        yaw,
+        roll,
+      });
+    });
+})();
 
 // ================== ตรวจจับ + ส่ง snapshot ทุก 10 วิ ==================
 function startVideoUpload() {
@@ -328,36 +370,40 @@ function startVideoUpload() {
   let canvas;
 
   videoUpload.addEventListener("change", async () => {
-    const file = videoUpload.files[0];
-    if (!file) return;
+  const file = videoUpload.files[0];
+  if (!file) return;
 
-    // รีเซ็ต progress และ UI ให้กลับเป็นสถานะกำลังประมวลผล
-    savedSnapshots = 0;
-    expectedSnapshots = 0;
-    countedTimes.clear();
-    if (processingTitle) processingTitle.textContent = 'กำลังประมวลผลวิดีโอ';
-    if (summaryLink) summaryLink.classList.add('hidden');
-    updateProgressFromSnapshots();
+  // 1) รีเซ็ตตัวนับ/กราฟ/สถานะ
+  savedSnapshots = 0;
+  expectedSnapshots = 0;          // ให้เป็น 0 ไปก่อน เดี๋ยวคำนวณใหม่ตอน loadedmetadata
+  updateProgressFromSnapshots();  // อัปเดตแถบ % (0/0 → 0%)
 
-    // 1) รีเซ็ตตัวนับ/กราฟ/สถานะ
-    savedSnapshots = 0;
-    expectedSnapshots = 0;
-    countedTimes.clear();
-    updateProgressFromSnapshots();
+  // เคลียร์กราฟ
+  lineX.length = 0;
+  lineYLabels.length = 0;
+  pieCounts = { "บวก (Positive)":0, "กลาง (Neutral)":0, "ลบ (Negative)":0, "ไม่อยู่หน้าจอ":0 };
+  lineChart.update();
+  pieChart.data.datasets[0].data = GROUP_LABELS.map(() => 0);
+  pieChart.update();
 
-    lineX.length = 0;
-    lineYLabels.length = 0;
-    pieCounts = { "บวก (Positive)":0, "กลาง (Neutral)":0, "ลบ (Negative)":0, "ไม่อยู่หน้าจอ":0 };
-    initCharts(); // รีอินิตกราฟให้สะอาด
+  // 2) ล้าง CSV สำหรับรอบใหม่นี้ (สำคัญ: await ให้เสร็จก่อนเล่นคลิป)
+  await fetch("http://127.0.0.1:5000/api/clear_snapshots", { method: "POST" });
 
-    // 2) ล้าง CSV สำหรับรอบใหม่นี้
-    await fetch("http://127.0.0.1:5000/api/clear_snapshots", { method: "POST" });
+  // 3) โหลดและเล่นคลิป
+  video.src = URL.createObjectURL(file);
+  video.load();
+  // (ไม่ต้อง computeExpectedSnapshots() ที่นี่ก็ได้ เพราะ duration ยังไม่รู้)
+  // เดี๋ยวคำนวณ Y เมื่อได้เมตาดาต้าของคลิป:
+  //   video.addEventListener('loadedmetadata', computeExpectedSnapshots);
+  video.play().catch((err) => console.error("ไม่สามารถเล่นวิดีโอ:", err));
+});
 
-    // 3) โหลดและเล่นคลิป
-    video.src = URL.createObjectURL(file);
-    video.load();
-    video.play().catch((err) => console.error("ไม่สามารถเล่นวิดีโอ:", err));
-  });
+  function getEAR(eye) {
+    const A = Math.hypot(eye[1].x - eye[5].x, eye[1].y - eye[5].y);
+    const B = Math.hypot(eye[2].x - eye[4].x, eye[2].y - eye[4].y);
+    const C = Math.hypot(eye[0].x - eye[3].x, eye[0].y - eye[3].y);
+    return (A + B) / (2.0 * C);
+  }
 
   function startDetection() {
     function resizeCanvasToVideo() {
@@ -386,37 +432,63 @@ function startVideoUpload() {
         }
 
         const detections = await faceapi
-          .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.3 }))
+          .detectAllFaces(
+            video,
+            new faceapi.TinyFaceDetectorOptions({
+              inputSize: 512,
+              scoreThreshold: 0.3,
+            })
+          )
           .withFaceLandmarks()
           .withFaceExpressions();
 
-        const displaySize = { width: video.videoWidth, height: video.videoHeight };
+        const displaySize = {
+          width: video.videoWidth,
+          height: video.videoHeight,
+        };
         faceapi.matchDimensions(canvas, displaySize);
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+        const resizedDetections = faceapi.resizeResults(
+          detections,
+          displaySize
+        );
 
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        faceapi.draw.drawDetections(canvas, resizedDetections, { withScore: false });
+        faceapi.draw.drawDetections(canvas, resizedDetections, {
+          withScore: false,
+        });
         faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-        faceapi.draw.drawFaceExpressions(canvas, resizedDetections, { minConfidence: 0.1, fontSize: 14 });
+        faceapi.draw.drawFaceExpressions(canvas, resizedDetections, {
+          minConfidence: 0.1,
+          fontSize: 14,
+        });
 
         const nowSec = Math.floor(video.currentTime);
 
         // ไม่มีใบหน้า
         if (resizedDetections.length === 0) {
-          if (nowSec % 10 === 0 && nowSec !== lastSnapshotSec && nowSec >= 10 && !isFetching) {
+          if (nowSec % 10 === 0 && nowSec !== lastSnapshotSec && nowSec >= 10) {
             lastSnapshotSec = nowSec;
-            const sw = video.videoWidth, sh = video.videoHeight;
+            const sw = video.videoWidth,
+              sh = video.videoHeight;
             const tempCanvas = document.createElement("canvas");
-            tempCanvas.width = sw; tempCanvas.height = sh;
+            tempCanvas.width = sw;
+            tempCanvas.height = sh;
             tempCanvas.getContext("2d").drawImage(video, 0, 0, sw, sh);
 
+            // ส่งไป backend เพื่อบันทึก CSV (emotion เว้นว่าง + behavior ไม่อยู่หน้าจอ)
             const imgSrc = tempCanvas.toDataURL("image/png");
             isFetching = true;
             fetch("http://127.0.0.1:5000/api/analyze", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ image: imgSrc, time: nowSec, emotion: "", confidence: "", behavior: "ไม่อยู่หน้าจอ" }),
+              body: JSON.stringify({
+                image: imgSrc,
+                time: nowSec,
+                emotion: "",
+                confidence: "",
+                behavior: "ไม่อยู่หน้าจอ",
+              }),
             })
               .then((res) => res.json())
               .then((data) => {
@@ -431,27 +503,42 @@ function startVideoUpload() {
                   pitch: data.pitch,
                   yaw: data.yaw,
                 });
-                bumpProgressOnce(nowSec); // นับครั้งเดียว/เวลา
               })
-              .finally(() => { isFetching = false; });
+              .finally(() => {
+                isFetching = false;
+              });
           }
         }
 
         // มีใบหน้า
         resizedDetections.forEach((detection) => {
           const box = detection.detection.box;
+
+          // ข้ามการคำนวณมุมแบบละเอียดในหน้า index (ให้ backend วิเคราะห์)
           const nowSec2 = Math.floor(video.currentTime);
-          if (nowSec2 % 10 === 0 && nowSec2 !== lastSnapshotSec && !isFetching && nowSec2 >= 10) {
+          if (
+            nowSec2 % 10 === 0 &&
+            nowSec2 !== lastSnapshotSec &&
+            !isFetching &&
+            nowSec2 >= 10
+          ) {
             lastSnapshotSec = nowSec2;
 
-            const sw = 500, sh = 600;
+            const sw = 500,
+              sh = 600;
             const sx = Math.max(0, box.x + box.width / 2 - sw / 2);
             const sy = Math.max(0, box.y + box.height / 2 - sh / 2);
             const tempCanvas = document.createElement("canvas");
-            tempCanvas.width = sw; tempCanvas.height = sh;
-            tempCanvas.getContext("2d").drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+            tempCanvas.width = sw;
+            tempCanvas.height = sh;
+            tempCanvas
+              .getContext("2d")
+              .drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
 
-            const sorted = Object.entries(detection.expressions || {}).sort((a, b) => b[1] - a[1]);
+            // เลือกอารมณ์หลักจาก face-api
+            const sorted = Object.entries(detection.expressions || {}).sort(
+              (a, b) => b[1] - a[1]
+            );
             const [mainEmotion, mainScore] = sorted[0] || ["neutral", 0];
 
             const imgSrc = tempCanvas.toDataURL("image/png");
@@ -459,7 +546,12 @@ function startVideoUpload() {
             fetch("http://127.0.0.1:5000/api/analyze", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ image: imgSrc, time: nowSec2, emotion: mainEmotion, confidence: mainScore }),
+              body: JSON.stringify({
+                image: imgSrc,
+                time: nowSec2,
+                emotion: mainEmotion,
+                confidence: mainScore,
+              }),
             })
               .then((res) => res.json())
               .then((data) => {
@@ -474,13 +566,15 @@ function startVideoUpload() {
                   pitch: data.pitch,
                   yaw: data.yaw,
                 });
-                bumpProgressOnce(nowSec2); // นับครั้งเดียว/เวลา
               })
-              .finally(() => { isFetching = false; });
+              .finally(() => {
+                isFetching = false;
+              });
           }
         });
       } catch (err) {
         console.error("❌ onFrame error:", err);
+        isFetching = false;
       }
       requestAnimationFrame(onFrame);
     }
@@ -497,44 +591,50 @@ function startVideoUpload() {
     }
   });
 
-  // ===== โหลดข้อมูลเดิม + เชื่อม SSE สำหรับอัปเดตสด =====
+  // ===== สร้างกราฟ + โหลดข้อมูลเดิม + เชื่อม SSE สำหรับอัปเดตสด =====
   (async function bootstrapCharts() {
     initCharts();
-    try {
-      const res = await fetch("http://127.0.0.1:5000/api/snapshots");
-      const csvText = await res.text();
-      const rows = csvText.split("\n").slice(1).filter(Boolean);
-
-      // เซ็ตค่าเริ่มและกันนับซ้ำกับ SSE
-      savedSnapshots = rows.length;
-      countedTimes.clear();
-      for (const line of rows) {
-        const [, time] = line.split(",");
-        countedTimes.add(String(Math.floor(Number(time) || 0)));
-      }
-      updateProgressFromSnapshots();
-
-      // เติมกราฟจาก CSV
-      rows.forEach((line) => {
-        const [timestamp, time, emotion, confidence, behavior, eye_status, pitch, yaw, roll] = line.split(",");
-        pushSnapshot({ timestamp, time, emotion, confidence, behavior, eye_status, pitch, yaw, roll });
+    const res = await fetch("http://127.0.0.1:5000/api/snapshots");
+    const csvText = await res.text();
+    const rows = csvText.split("\n").slice(1).filter(Boolean);
+    savedSnapshots = rows.length;          // <== X จาก CSV
+    updateProgressFromSnapshots();         // อัปเดต %/แถบ/ตัวนับ
+    rows.forEach((line) => {
+      const [
+        timestamp,
+        time,
+        emotion,
+        confidence,
+        behavior,
+        eye_status,
+        pitch,
+        yaw,
+        roll,
+      ] = line.split(",");
+      pushSnapshot({
+        timestamp,
+        time,
+        emotion,
+        confidence,
+        behavior,
+        eye_status,
+        pitch,
+        yaw,
+        roll,
       });
-    } catch (e) {
-      console.warn("โหลด CSV เริ่มต้นไม่สำเร็จ", e);
-    }
-
+    });
+    // ต่อ SSE
     setLive("connecting");
     const es = new EventSource("http://127.0.0.1:5000/api/stream");
     es.onopen = () => setLive("live");
     es.onerror = () => setLive("offline");
     es.onmessage = (evt) => {
       try {
-        const row = JSON.parse(evt.data);
-        pushSnapshot(row);
-        bumpProgressOnce(row.time); // นับครั้งเดียว/เวลา
-      } catch (e) {
-        console.error("SSE parse error:", e);
-      }
+        pushSnapshot(JSON.parse(evt.data));
+        pushSnapshot(row);          // วาดกราฟ
+        savedSnapshots += 1;        // นับสแนปเพิ่ม
+        updateProgressFromSnapshots();
+      } catch (e) {}
     };
   })();
 }

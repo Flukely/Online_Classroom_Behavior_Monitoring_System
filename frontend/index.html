@@ -1,26 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Face Detection App</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
     <div class="container">
         <h1>Face Detection App</h1>
-        <div class="upload-section">
-            <input type="file" id="videoUpload" accept="video/*">
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <label for="videoUpload" class="btn btn-primary">อัปโหลดวิดีโอ</label>
+            <span id="fileName" class="file-name">ยังไม่เลือกไฟล์</span>
+
+            <!-- ใน .toolbar (ข้างปุ่มสรุปผล) เติมปุ่มสลับวิดีโอ -->
+            <button id="toggleVideoBtn" class="btn">ซ่อนวิดีโอ</button>
+
+            <span class="spacer"></span>
+            <span id="liveTag" class="tag" data-state="connecting">Connecting…</span>
         </div>
+
+        <!-- การ์ดความคืบหน้า -->
+        <div id="processingCard" class="processing-card hidden" aria-live="polite">
+            <div class="processing-row">
+                <span id="processingTitle">กำลังประมวลผลวิดีโอ</span>
+                <span><span id="snapCount">0/0</span> • <span id="percentText">0%</span></span>
+
+                <!-- ซ่อนปุ่มสรุปก่อน แล้วค่อยโชว์เมื่อ 100% -->
+                <a id="summaryLink" class="btn hidden" href="summary.html" target="_blank"
+                    rel="noopener noreferrer">สรุปข้อมูล</a>
+
+            </div>
+            <div class="progress">
+                <div id="progressBar" class="bar" style="width:0%"></div>
+            </div>
+            <div class="processing-meta">
+                เวลา: <span id="elapsed">00:00</span> / <span id="duration">00:00</span>
+            </div>
+        </div>
+
         <div class="loader" id="loader"></div>
+
         <div class="video-container">
             <video id="myVideo" autoplay muted></video>
-            <input type="range" id="videoProgress" min="0" value="0" step="0.01" style="width:100%;">
-            <div style="display:flex;justify-content:space-between;font-size:14px;color:#fff;margin-top:2px;">
+
+            <input type="range" id="videoProgress" min="0" value="0" step="0.01" style="width:100%;" />
+            <div class="time-row">
                 <span id="currentTime">00:00</span>
                 <span id="totalTime">00:00</span>
             </div>
         </div>
+
         <div class="charts-container">
             <div class="chart-wrapper">
                 <canvas id="emotionLineChart"></canvas>
@@ -29,12 +63,24 @@
                 <canvas id="emotionPieChart"></canvas>
             </div>
         </div>
-        <button id="reloadChartBtn">Refresh Chart</button>
-        <button id="clearCsvBtn" style="background:#e74c3c;color:#fff;">ล้างข้อมูล</button>
-        <div id="snapshotContainer"></div>
+
+        <!-- ซ่อนไฟล์อินพุตจริงไว้ (แต่ยังคลิกได้ผ่าน <label>) -->
+        <input type="file" id="videoUpload" accept="video/*" class="hidden-input" />
+
+        <!-- Debug Snapshot Panel -->
+        <div class="debug-toolbar">
+            <button id="toggleDebugBtn">แสดง/ซ่อน Snapshot (Debug)</button>
+            <button id="clearDebugBtn">ล้าง Snapshot บนหน้า</button>
+        </div>
+        <div id="debugPanel" class="debug-panel hidden">
+            <h2>Snapshots (Debug)</h2>
+            <div id="snapshotContainer" class="snapshots-grid"></div>
+        </div>
     </div>
+
     <script src="face-api.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
+
 </html>
