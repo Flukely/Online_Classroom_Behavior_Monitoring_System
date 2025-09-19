@@ -1,86 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th" data-theme="light">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Online Classroom Behavior Analyzing</title>
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classroom Analyzer — Upload & Analyze</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
-    <div class="container">
-        <h1>Online Classroom Behavior Analyzing</h1>
 
-        <!-- Toolbar -->
-        <div class="toolbar">
-            <label for="videoUpload" class="btn btn-primary">อัปโหลดวิดีโอ</label>
-            <span id="fileName" class="file-name">ยังไม่เลือกไฟล์</span>
+  <!-- Topbar -->
+  <nav class="topbar">
+    <div class="topbar__left">
+      <div class="brand">🎓 Classroom Analyzer</div>
+      <a class="toplink" href="#how">วิธีใช้งาน</a>
+      <a class="toplink" href="#features">ฟีเจอร์</a>
+    </div>
+    <div class="topbar__right">
+      <!-- <a class="btn btn-ghost" href="summary.html" id="goSummary">ดูสรุป</a> -->
+      <label class="theme-toggle" title="สลับโหมดสว่าง/มืด">
+        <input type="checkbox" id="themeToggle" />
+        <span class="slider"></span>
+      </label>
+    </div>
+  </nav>
 
-            <!-- ใน .toolbar (ข้างปุ่มสรุปผล) เติมปุ่มสลับวิดีโอ -->
-            <button id="toggleVideoBtn" class="btn">ซ่อนวิดีโอ</button>
+  <!-- HERO: หน้าอัปโหลด -->
+  <header id="uploadHero" class="hero">
+    <h1 class="hero-title">อัปโหลดวิดีโอเพื่อวิเคราะห์พฤติกรรมในชั้นเรียน</h1>
+    <p class="hero-lead">รองรับหลายใบหน้าพร้อมกัน • มีกราฟสรุปผล • ทำงานบนเครื่องคุณ</p>
 
-            <span class="spacer"></span>
-            <span id="liveTag" class="tag" data-state="connecting">Connecting…</span>
-        </div>
-
-        <!-- การ์ดความคืบหน้า -->
-        <div id="processingCard" class="processing-card hidden" aria-live="polite">
-            <div class="processing-row">
-                <span id="processingTitle">กำลังประมวลผลวิดีโอ</span>
-                <span><span id="snapCount">0/0</span> • <span id="percentText">0%</span></span>
-
-                <!-- ซ่อนปุ่มสรุปก่อน แล้วค่อยโชว์เมื่อ 100% -->
-                <a id="summaryLink" class="btn hidden" href="summary.html" target="_blank"
-                    rel="noopener noreferrer">สรุปข้อมูล</a>
-
-            </div>
-            <div class="progress">
-                <div id="progressBar" class="bar" style="width:0%"></div>
-            </div>
-            <div class="processing-meta">
-                เวลา: <span id="elapsed">00:00</span> / <span id="duration">00:00</span>
-            </div>
-        </div>
-
-        <div class="loader" id="loader"></div>
-
-        <div class="video-container">
-            <video id="myVideo" autoplay muted></video>
-
-            <input type="range" id="videoProgress" min="0" value="0" step="0.01" style="width:100%;" />
-            <div class="time-row">
-                <span id="currentTime">00:00</span>
-                <span id="totalTime">00:00</span>
-            </div>
-        </div>
-
-        <div class="charts-container">
-            <div class="chart-wrapper">
-                <canvas id="emotionLineChart"></canvas>
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="emotionPieChart"></canvas>
-            </div>
-        </div>
-
-        <!-- ซ่อนไฟล์อินพุตจริงไว้ (แต่ยังคลิกได้ผ่าน <label>) -->
-        <input type="file" id="videoUpload" accept="video/*" class="hidden-input" />
-
-        <!-- Debug Snapshot Panel -->
-        <div class="debug-toolbar">
-            <button id="toggleDebugBtn">แสดง/ซ่อน Snapshot (Debug)</button>
-            <button id="clearDebugBtn">ล้าง Snapshot บนหน้า</button>
-        </div>
-        <div id="debugPanel" class="debug-panel hidden">
-            <h2>Snapshots (Debug)</h2>
-            <div id="snapshotContainer" class="snapshots-grid"></div>
-        </div>
+    <div class="hero-card" id="dropZone">
+      <div class="hero-cloud">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M20 48h24a12 12 0 0 0 2.3-23.8A16 16 0 0 0 17.7 20C11.6 20 6.7 24.9 6.7 31s5 11 11.1 11H20z"
+            fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M32 40V24m0 0l-6 6m6-6l6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </div>
+      <p class="hero-sub">ลากไฟล์มาวาง หรือกดปุ่มด้านล่าง</p>
+      <button id="selectFilesBtn" class="hero-btn" aria-label="เลือกไฟล์วิดีโอสำหรับวิเคราะห์">เลือกไฟล์วิดีโอ</button>
+      <p class="hero-hint">รองรับไฟล์วิดีโอทั่วไป เช่น MP4 / MOV</p>
     </div>
 
-    <script src="face-api.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
+    <!-- Section: feature badges -->
+    <section id="features" class="features-grid">
+      <div class="feature">
+        <div class="feature__icon">🧠</div>
+        <h3>ตรวจจับหลายอารมณ์</h3>
+        <p>วิเคราะห์สีหน้า, การมองจอ, head pose ฯลฯ เพื่อสรุปพฤติกรรม</p>
+      </div>
+      <div class="feature">
+        <div class="feature__icon">🧩</div>
+        <h3>ติดตามบุคคล (ID)</h3>
+        <p>ระบบจับคู่ใบหน้าอย่างต่อเนื่อง เพื่อสรุปผลแยกตามคน</p>
+      </div>
+      <div class="feature">
+        <div class="feature__icon">📊</div>
+        <h3>สรุปผลชัดเจน</h3>
+        <p>มีกราฟเส้น/วงกลม • หน้ารวม (Summary) พร้อมตารางขาดหน้าจอ</p>
+      </div>
+    </section>
+
+    <section id="how" class="steps">
+      <div class="step"><span>1</span> เลือกไฟล์วิดีโอ</div>
+      <div class="step"><span>2</span> รอประมวลผลทุก ๆ 10 วินาที</div>
+      <div class="step"><span>3</span> เปิด “ดูสรุป” เพื่อสำรวจเชิงลึก</div>
+    </section>
+  </header>
+
+  <!-- APP: ส่วนวิเคราะห์ (ซ่อนก่อนจนกว่าจะเลือกวิดีโอ) -->
+  <main id="appSection" class="container hidden">
+    <div class="toolbar" role="toolbar" aria-label="ตัวควบคุมวิดีโอและสถานะการประมวลผล">
+      <label for="videoUpload" class="btn btn-primary" aria-controls="myVideo">เปลี่ยนไฟล์วิดีโอ</label>
+      <span id="fileName" class="file-name">ยังไม่เลือกไฟล์</span>
+      <button id="toggleVideoBtn" class="btn" aria-pressed="false" aria-controls="myVideo">ซ่อนวิดีโอ</button>
+      <span class="spacer"></span>
+      <span id="liveTag" class="tag" data-state="connecting">Connecting…</span>
+    </div>
+
+    <!-- วิเคราะห์: วิดีโอ + แท่งเรียลไทม์ -->
+    <div class="analyze-grid">
+      <!-- ซ้าย: การประมวลผล + วิดีโอ -->
+      <div class="video-col">
+        <div id="processingCard" class="processing-card" aria-live="polite">
+          <div class="processing-row">
+            <span id="processingTitle">กำลังประมวลผลวิดีโอ</span>
+            <span><span id="snapCount">0/—</span> • <span id="percentText">0%</span></span>
+            <a id="summaryLink" class="btn hidden" href="summary.html" target="_blank"
+              rel="noopener noreferrer">สรุปข้อมูล</a>
+          </div>
+          <div class="progress">
+            <div id="progressBar" class="bar" style="width:0%"></div>
+          </div>
+          <div class="processing-meta">เวลา: <span id="elapsed">00:00</span> / <span id="duration">00:00</span></div>
+        </div>
+
+        <div class="video-container">
+          <video id="myVideo" autoplay muted playsinline></video>
+          <input type="range" id="videoProgress" min="0" value="0" step="0.01" />
+          <div class="time-row"><span id="currentTime">00:00</span> / <span id="totalTime">00:00</span></div>
+        </div>
+      </div>
+
+      <!-- ขวา: กราฟแท่งเรียลไทม์ -->
+      <div class="charts-col">
+        <h2 class="section-title">กราฟเรียลไทม์</h2>
+        <div class="chart-scroll">
+          <div class="chart-wrapper">
+            <canvas id="emotionBarChart"></canvas>
+          </div>
+        </div>
+        <aside class="tip">
+          💡 เลื่อนดูได้: หากเวลาเยอะ ระบบจะยืดกราฟและเลื่อนแนวนอนได้อัตโนมัติ
+        </aside>
+      </div>
+    </div>
+
+    <!-- Debug -->
+    <div class="debug-toolbar" role="group" aria-label="สแน็ปช็อตดีบั๊ก">
+      <button id="toggleDebugBtn">แสดง/ซ่อน Snapshot (Debug)</button>
+      <button id="clearDebugBtn">ล้าง Snapshot บนหน้า</button>
+    </div>
+    <div id="debugPanel" class="debug-panel hidden">
+      <h2>Snapshots (Debug)</h2>
+      <div id="snapshotContainer" class="snapshots-grid" aria-live="polite"></div>
+      <h2 style="margin-top:16px;">Per-ID Gallery (Debug)</h2>
+      <div id="idGalleryContainer" class="id-gallery"></div>
+    </div>
+  </main>
+
+
+  <!-- global file input -->
+  <input type="file" id="videoUpload" accept="video/*" class="hidden-input" />
+
+  <!-- toast -->
+  <div id="toastHost" class="toast-host"></div>
+
+  <footer class="footer">© 2025 Classroom Analyzer</footer>
+
+  <script src="face-api.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
 </body>
 
 </html>

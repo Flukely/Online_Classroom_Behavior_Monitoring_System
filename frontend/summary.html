@@ -1,38 +1,108 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Summary - Emotion Monitor</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <style>
-    .toolbar { display:flex; gap:10px; justify-content:center; margin:10px 0 20px; }
-  </style>
+  <title>Classroom Analyzer — Summary</title>
+  <link rel="stylesheet" href="summary.css"/>
+  <link rel="stylesheet" href="styles.css"/><!-- ใช้โทนสีร่วม -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>สรุปผลอารมณ์จาก CSV</h1>
-    <div class="toolbar">
-      <a href="index.html"><button type="button">← กลับหน้าตรวจจับ</button></a>
-      <button id="zoom1Btn">Zoom x1 (10 วินาที)</button>
-      <button id="zoom2Btn">Zoom x2 (30 วินาที)</button>
-      <button id="zoom3Btn">Zoom x3 (60 วินาที)</button>
-      <button id="reloadChartBtn">รีเฟรชข้อมูล</button>
+
+  <nav class="topbar">
+    <div class="topbar__left">
+      <div class="brand">🎓 Classroom Analyzer</div>
+    </div>
+    <div class="topbar__right">
+      <a href="index.html" class="btn btn-ghost">กลับหน้าอัปโหลด</a>
+    </div>
+  </nav>
+
+  <!-- PAGE WRAP: ขยายความกว้าง/ระยะหายใจ -->
+  <main class="page">
+    <h1 class="page-title">สรุปผลการวิเคราะห์พฤติกรรมในชั้นเรียน</h1>
+
+    <!-- แถบเครื่องมือ -->
+    <div class="toolbar" role="toolbar" aria-label="ตัวกรองและมุมมอง">
+      <div class="tabs">
+        <button id="tabOverview" class="btn tab active">ภาพรวม</button>
+        <button id="tabMotions" class="btn tab">อารมณ์ทั้งหมด</button>
+      </div>
+
+      <div class="filters">
+        <select id="personFilter" class="select">
+          <option value="">ทุกคน</option>
+        </select>
+
+        <div class="zoom-group">
+          <button id="zoom1Btn" class="btn zoom is-active">10 วินาที/ช่วง</button>
+          <button id="zoom2Btn" class="btn zoom" style="display:none">30 วินาที/ช่วง</button>
+          <button id="zoom3Btn" class="btn zoom" style="display:none">60 วินาที/ช่วง</button>
+        </div>
+
+        <button id="reloadChartBtn" class="btn">รีเฟรช</button>
+        <button id="downloadFullBtn" class="btn btn-primary">ดาวน์โหลดสรุปผล</button>
+      </div>
     </div>
 
-    <div class="charts-container">
-      <div class="chart-wrapper">
-        <canvas id="emotionLineChart"></canvas>
+    <!-- KPI -->
+    <section class="panel">
+      <div class="kpi-grid" id="kpiGrid">
+        <!-- JS เติม -->
       </div>
-      <div class="chart-wrapper">
-        <canvas id="emotionPieChart"></canvas>
+    </section>
+
+    <!-- VIEW: OVERVIEW -->
+    <section id="overviewView" class="view view-active">
+      <div class="charts-grid">
+        <!-- LEFT: PIE -->
+        <article class="card chart-card">
+          <header class="card-head">
+            <h3>สัดส่วนตามกลุ่มอารมณ์</h3>
+          </header>
+          <div class="card-body">
+            <canvas id="groupPie" aria-label="กลุ่มอารมณ์"></canvas>
+          </div>
+          <div id="groupPctList" class="pct-list"></div>
+          <footer class="card-actions">
+            <button class="btn" data-dl="groupPie">ดาวน์โหลด PNG</button>
+          </footer>
+        </article>
+
+        <!-- RIGHT: SCATTER -->
+        <article class="card chart-card">
+          <header class="card-head">
+            <h3>พฤติกรรมตามช่วงเวลา</h3>
+          </header>
+          <div class="card-body">
+            <canvas id="groupOverTime" aria-label="กลุ่มอารมณ์ตามเวลา"></canvas>
+          </div>
+          <footer class="card-actions">
+            <button id="downloadCsvBtn" class="btn btn-ghost">บันทึกเป็น CSV</button>
+            <button class="btn" data-dl="groupOverTime">ดาวน์โหลด PNG</button>
+          </footer>
+        </article>
       </div>
-    </div>
+    </section>
 
-    <p style="text-align:center;color:#666;">ข้อมูลทั้งหมดอ่านจาก <code>logs/emotion_snapshots.csv</code></p>
-  </div>
+    <!-- VIEW: EMO7 -->
+    <section id="motionsView" class="view">
+      <article class="card chart-card">
+        <header class="card-head">
+          <h3>อารมณ์ทั้งหมด (สัดส่วน % ต่อช่วง)</h3>
+        </header>
+        <div class="card-body">
+          <canvas id="emo7OverTime"></canvas>
+        </div>
+        <footer class="card-actions">
+          <button class="btn" data-dl="emo7OverTime">ดาวน์โหลด PNG</button>
+        </footer>
+      </article>
+    </section>
+  </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="summary.js"></script>
 </body>
 </html>

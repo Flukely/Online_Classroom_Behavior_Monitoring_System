@@ -1,153 +1,514 @@
-// ================== DOM ==================
+// ===== Elements =====
+const hero = document.getElementById('uploadHero');
+const app = document.getElementById('appSection');
+const selectFilesBtn = document.getElementById('selectFilesBtn');
+const dropZone = document.getElementById('dropZone');
+const themeToggle = document.getElementById('themeToggle');
+const toastHost = document.getElementById('toastHost');
+
 const video = document.getElementById("myVideo");
 const videoProgress = document.getElementById("videoProgress");
 const currentTimeSpan = document.getElementById("currentTime");
 const totalTimeSpan = document.getElementById("totalTime");
 let canvas;
 
-// ==== Toggle Video & Progress UI ====
 const toggleVideoBtn = document.getElementById('toggleVideoBtn');
-const processingCard = document.getElementById('processingCard');
 const videoContainer = document.querySelector('.video-container');
 
 const progressBar = document.getElementById('progressBar');
-const percentText  = document.getElementById('percentText');
-const elapsedEl    = document.getElementById('elapsed');
-const durationEl   = document.getElementById('duration');
-
+const percentText = document.getElementById('percentText');
+const elapsedEl = document.getElementById('elapsed');
+const durationEl = document.getElementById('duration');
 const summaryLink = document.getElementById('summaryLink');
 const processingTitle = document.getElementById('processingTitle');
 
-// ซ่อนวิดีโอเป็นค่าเริ่มต้น
-let isVideoVisible = false;
-function setVideoVisible(show){
-  isVideoVisible = !!show;
-  if (isVideoVisible) {
-    videoContainer.classList.remove('hidden');
-    processingCard.classList.add('hidden');
-    toggleVideoBtn.textContent = 'ซ่อนวิดีโอ';
-  } else {
-    videoContainer.classList.add('hidden');
-    processingCard.classList.remove('hidden');
-    toggleVideoBtn.textContent = 'แสดงวิดีโอ';
-  }
-}
-if (toggleVideoBtn) {
-  toggleVideoBtn.addEventListener('click', () => setVideoVisible(!isVideoVisible));
-}
-setVideoVisible(false);
-
-// เพิ่มตัวแปรสำหรับ UI ใหม่
+const fileInputEl = document.getElementById("videoUpload");
 const fileNameEl = document.getElementById("fileName");
+if (selectFilesBtn) selectFilesBtn.onclick = () => fileInputEl.click();
+
+// ===== Helpers (UI) =====
+function toast(msg, type = "ok") {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  toastHost.appendChild(el);
+  
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(6px)';
+  }, 2600);
+  
+  setTimeout(() => el.remove(), 3200);
+}
+
+// Theme management
+(function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const root = document.documentElement;
+  
+  if (saved) {
+    root.setAttribute('data-theme', saved);
+    themeToggle.checked = (saved === 'dark');
+  }
+  
+  themeToggle?.addEventListener('change', () => {
+    const mode = themeToggle.checked ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', mode);
+    localStorage.setItem('theme', mode);
+  });
+})();
+
+// Drag & drop functionality
+['dragenter', 'dragover'].forEach(ev => {
+  dropZone?.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.add('drag');
+  });
+});
+
+['dragleave', 'drop'].forEach(ev => {
+  dropZone?.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag');
+  });
+});
+
+dropZone?.addEventListener('drop', e => {
+  const f = e.dataTransfer?.files?.[0];
+  if (f) {
+    fileInputEl.files = e.dataTransfer.files;
+    fileInputEl.dispatchEvent(new Event('change'));
+  }
+});
+
+// Keyboard support for dropzone card (Enter/Space opens file picker)
+dropZone?.setAttribute('tabindex', '0');
+dropZone?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    fileInputEl?.click();
+  }
+});
+
+// ===== Toggle video visibility =====
+let isVideoVisible = true;
+
+function setVideoVisible(show) {
+  isVideoVisible = !!show;
+  videoContainer.classList.toggle('hidden', !isVideoVisible);
+  toggleVideoBtn.textContent = isVideoVisible ? 'ซ่อนวิดีโอ' : 'แสดงวิดีโอ';
+  toggleVideoBtn.setAttribute('aria-pressed', String(isVideoVisible));
+}
+
+toggleVideoBtn?.addEventListener('click', () => setVideoVisible(!isVideoVisible));
+setVideoVisible(true);
+
+// Live tag functionality
 const liveTag = document.getElementById("liveTag");
 
-// helper set สถานะ live
 function setLive(state) {
   if (!liveTag) return;
+  
   liveTag.dataset.state = state;
-  liveTag.textContent = state === "live" ? "Live" : state === "offline" ? "Offline" : "Connecting…";
+  liveTag.textContent = state === "live" 
+    ? "Live" 
+    : state === "offline" 
+      ? "Offline" 
+      : "Connecting…";
 }
 
-// เมื่อเลือกไฟล์ แสดงชื่อไฟล์บน toolbar
-const fileInputEl = document.getElementById("videoUpload");
-if (fileInputEl && fileNameEl) {
-  fileInputEl.addEventListener("change", () => {
-    fileNameEl.textContent = fileInputEl.files[0] ? fileInputEl.files[0].name : "ยังไม่เลือกไฟล์";
-  });
-}
-
-// ===== Snapshot-driven progress =====
+// ===== Progress tracking =====
 const SNAP_INTERVAL_SEC = 10;
 const snapCountEl = document.getElementById('snapCount');
-
-let expectedSnapshots = 0; // Y
-let savedSnapshots = 0;    // X
+let expectedSnapshots = 0, savedSnapshots = 0;
 
 function computeExpectedSnapshots() {
   const dur = Number.isFinite(video.duration) ? video.duration : 0;
   expectedSnapshots = Math.max(0, Math.floor(dur / SNAP_INTERVAL_SEC));
 }
+
 function updateProgressFromSnapshots() {
-  const pct = expectedSnapshots > 0
-    ? Math.min(100, Math.round((savedSnapshots / expectedSnapshots) * 100))
+  const pct = expectedSnapshots > 0 
+    ? Math.min(100, Math.round((savedSnapshots / expectedSnapshots) * 100)) 
     : 0;
-  if (progressBar)  progressBar.style.width = pct + '%';
-  if (percentText)  percentText.textContent = pct + '%';
-  if (snapCountEl)  snapCountEl.textContent = `${savedSnapshots}/${expectedSnapshots}`;
+  
+  if (progressBar) progressBar.style.width = pct + '%';
+  if (percentText) percentText.textContent = pct + '%';
+  
+  if (snapCountEl) {
+    snapCountEl.textContent = expectedSnapshots > 0 
+      ? `${savedSnapshots}/${expectedSnapshots}` 
+      : `${savedSnapshots}/—`;
+  }
+  
+  if (pct === 100) {
+    processingTitle.textContent = 'วิเคราะห์สำเร็จ';
+    summaryLink.classList.remove('hidden');
+    toast('วิเคราะห์เสร็จแล้ว ✅');
+  }
 }
 
-// --- ผูกกับ metadata ของวิดีโอ เพื่อคำนวณ Y ---
-video.addEventListener("loadedmetadata", () => {
-  computeExpectedSnapshots();
-  if (durationEl) durationEl.textContent = formatTime(video.duration || 0);
-  updateProgressFromSnapshots(); // แสดง 0/Y
+// Aspect ratio & time slider
+function updateAspect() {
+  if (!video.videoWidth) return;
+  
+  document.querySelector('.video-container').style.setProperty(
+    '--video-aspect', 
+    `${video.videoWidth} / ${video.videoHeight}`
+  );
+}
+
+['loadedmetadata', 'durationchange'].forEach(ev => {
+  video.addEventListener(ev, () => {
+    computeExpectedSnapshots();
+    bindDurationUI();
+    updateProgressFromSnapshots();
+    updateAspect();
+  });
 });
 
-// --- เมื่อเวลาเดิน ให้แสดง elapsed ---
+function bindDurationUI() {
+  if (!isNaN(video.duration)) {
+    durationEl.textContent = formatTime(video.duration || 0);
+    totalTimeSpan.textContent = formatTime(video.duration || 0);
+    videoProgress.max = video.duration || 0;
+  }
+}
+
 video.addEventListener('timeupdate', () => {
-  if (elapsedEl) elapsedEl.textContent = formatTime(video.currentTime || 0);
+  const t = video.currentTime || 0;
+  elapsedEl.textContent = formatTime(t);
+  currentTimeSpan.textContent = formatTime(t);
+  
+  if (!isNaN(video.duration)) {
+    videoProgress.value = t;
+  }
 });
 
-// === Debug Snapshot Panel ===
-const debugPanel = document.getElementById("debugPanel");
-const toggleDebugBtn = document.getElementById("toggleDebugBtn");
-const clearDebugBtn = document.getElementById("clearDebugBtn");
-const snapshotContainer = document.getElementById("snapshotContainer");
+videoProgress.addEventListener('input', (e) => {
+  const v = parseFloat(e.target.value || '0');
+  if (!isNaN(v)) video.currentTime = v;
+});
 
-if (toggleDebugBtn) toggleDebugBtn.onclick = () => debugPanel.classList.toggle("hidden");
-if (clearDebugBtn) clearDebugBtn.onclick = () => { if (snapshotContainer) snapshotContainer.innerHTML = ""; };
+// ===== Debug panel =====
+const debugPanel = document.getElementById("debugPanel");
+
+document.getElementById("toggleDebugBtn")?.addEventListener('click', () => {
+  debugPanel.classList.toggle('hidden');
+});
+
+document.getElementById("clearDebugBtn")?.addEventListener('click', () => {
+  document.getElementById("snapshotContainer").innerHTML = "";
+  document.getElementById("idGalleryContainer").innerHTML = "";
+});
+
+// ===== Snapshot cards & per-id galleries =====
+const snapshotContainer = document.getElementById("snapshotContainer");
+const idGalleryContainer = document.getElementById("idGalleryContainer");
+const idBuckets = new Map();
+
+function ensureIdBucket(id) {
+  if (!idGalleryContainer) return null;
+  
+  let b = idBuckets.get(id);
+  if (!b) {
+    const wrap = document.createElement("div");
+    wrap.className = "id-bucket";
+    wrap.dataset.id = id;
+    wrap.innerHTML = `
+      <div class="id-header">
+        ID #${id}
+        <span class="badge">ล่าสุด t=<span class="id-lasttime">-</span>s</span>
+      </div>
+      <div class="id-grid"></div>
+    `;
+    
+    idGalleryContainer.prepend(wrap);
+    b = {
+      el: wrap,
+      grid: wrap.querySelector(".id-grid"),
+      last: wrap.querySelector(".id-lasttime")
+    };
+    
+    idBuckets.set(id, b);
+  }
+  
+  return b;
+}
+
+function addIdSnapshot({ person_id, imgSrc, time, emotion, confidence }) {
+  if (!person_id || !idGalleryContainer) return;
+  
+  const b = ensureIdBucket(person_id);
+  const cell = document.createElement("div");
+  cell.className = "id-thumb";
+  
+  const img = document.createElement("img");
+  img.loading = "lazy";
+  img.src = imgSrc;
+  img.alt = `ID ${person_id}`;
+  img.title = `t=${time}s ${emotion || ""}${
+    confidence !== undefined ? ` (${Math.round(Number(confidence) * 100)}%)` : ""
+  }`;
+  
+  const cap = document.createElement("small");
+  cap.className = "id-caption";
+  cap.textContent = `t=${time}s ${emotion || ""}`;
+  
+  cell.append(img, cap);
+  b.grid.prepend(cell);
+  
+  while (b.grid.children.length > 12) {
+    b.grid.lastChild.remove();
+  }
+  
+  b.last.textContent = time;
+}
 
 const MAX_SNAPSHOTS = 24;
-const deg = (x) => x === undefined || x === null || x === "" ? "-" : `${Number(x).toFixed(1)}°`;
+
+const deg = (x) => {
+  return x === undefined || x === null || x === "" 
+    ? "-" 
+    : `${Number(x).toFixed(1)}°`;
+};
 
 function addSnapshotCard(info) {
-  if (!snapshotContainer) return;
   const card = document.createElement("div");
   card.className = "snapshot-card";
-
+  
   const img = document.createElement("img");
   img.loading = "lazy";
   img.src = info.imgSrc;
   card.appendChild(img);
-
+  
   const meta = document.createElement("div");
   meta.className = "snapshot-meta";
+  
+  const pid = (info.person_id !== undefined && info.person_id !== null && info.person_id !== "") 
+    ? String(info.person_id) 
+    : null;
+  
+  const badge = pid 
+    ? `<span class="badge id">ID #${pid}</span>` 
+    : `<span class="badge absent">ไม่พบใบหน้า</span>`;
+  
+  const toSummary = pid 
+    ? `<a class="badge" href="summary.html?person=${encodeURIComponent(pid)}">สรุป</a>` 
+    : "";
+  
   meta.innerHTML = `
+    ${badge} ${toSummary}
     <b>t = ${info.time ?? 0}s</b>
     อารมณ์: ${info.emotion || "-"} ${
-      info.confidence !== undefined && info.confidence !== ""
-        ? `(${(Number(info.confidence) * 100).toFixed(1)}%)`
+      info.confidence !== undefined && info.confidence !== "" 
+        ? `(${(Number(info.confidence) * 100).toFixed(1)}%)` 
         : ""
     }<br>
     ท่าทาง: ${info.behavior || "-"}<br>
     ตา: ${info.eye_status || "-"}<br>
     R/P/Y: ${deg(info.roll)} / ${deg(info.pitch)} / ${deg(info.yaw)}
   `;
+  
   card.appendChild(meta);
-
   snapshotContainer.prepend(card);
+  
   while (snapshotContainer.children.length > MAX_SNAPSHOTS) {
     snapshotContainer.lastChild.remove();
   }
 }
 
-function updateProgressFromSnapshots() {
-  const pct = expectedSnapshots > 0
-    ? Math.min(100, Math.round((savedSnapshots / expectedSnapshots) * 100))
-    : 0;
+// ===== Charts =====
+const EMO_KEYS = [
+  'happy', 'surprised', 'neutral', 'sad', 
+  'angry', 'fearful', 'disgusted', 'not_in_frame'
+];
 
-  if (progressBar)  progressBar.style.width = pct + '%';
-  if (percentText)  percentText.textContent = pct + '%';
-  if (snapCountEl)  snapCountEl.textContent = `${savedSnapshots}/${expectedSnapshots}`;
+const EMO_LABEL = {
+  happy: "ดีใจ (Happy)",
+  surprised: "ประหลาดใจ (Surprised)",
+  neutral: "เฉย ๆ (Neutral)",
+  sad: "เศร้า (Sad)",
+  angry: "โกรธ (Angry)",
+  fearful: "กลัว (Fearful)",
+  disgusted: "รังเกียจ (Disgusted)",
+  not_in_frame: "ไม่อยู่หน้าจอ"
+};
 
-  // ✅ เมื่อครบ 100% ให้ขึ้นข้อความสำเร็จ + เปิดปุ่มสรุปข้อมูล
-  if (pct === 100) {
-    if (processingTitle) processingTitle.textContent = 'วิเคราะห์สำเร็จ';
-    if (summaryLink) summaryLink.classList.remove('hidden');
+const EMO_BG = {
+  happy: "rgba(46,204,113,0.85)",
+  surprised: "rgba(243,156,18,0.85)",
+  neutral: "rgba(149,165,166,0.85)",
+  sad: "rgba(52,152,219,0.85)",
+  angry: "rgba(231,76,60,0.85)",
+  fearful: "rgba(155,89,182,0.85)",
+  disgusted: "rgba(22,160,133,0.85)",
+  not_in_frame: "rgba(52,73,94,0.85)"
+};
+
+const EMO_BORDER = {
+  happy: "rgba(46,204,113,1)",
+  surprised: "rgba(243,156,18,1)",
+  neutral: "rgba(149,165,166,1)",
+  sad: "rgba(52,152,219,1)",
+  angry: "rgba(231,76,60,1)",
+  fearful: "rgba(155,89,182,1)",
+  disgusted: "rgba(22,160,133,1)",
+  not_in_frame: "rgba(52,73,94,1)"
+};
+
+const TICK_SEC = 10;
+let barCounts = new Map();
+let totals = EMO_KEYS.reduce((a, k) => {
+  a[k] = 0;
+  return a;
+}, {});
+let lineChart, pieChart;
+
+let confAgg = new Map(); // tick -> { emoKey: { sum: number, count: number } }
+
+function ensureTick(tk) {
+  if (!barCounts.has(tk)) {
+    const z = EMO_KEYS.reduce((a, k) => {
+      a[k] = 0;
+      return a;
+    }, {});
+    barCounts.set(tk, z);
   }
+  
+  return barCounts.get(tk);
 }
 
-// ================== โหลดโมเดล face-api ==================
+function rowToEmotionKey(row) {
+  const behavior = (row.behavior || "").trim();
+  if (behavior === "ไม่อยู่หน้าจอ") return "not_in_frame";
+  
+  const e = (row.emotion || "").trim().toLowerCase();
+  return EMO_KEYS.includes(e) ? e : "neutral";
+}
+
+function pushSnapshot(row) {
+  const t = Number(row.time || 0);
+  const tick = Math.floor(t / TICK_SEC) * TICK_SEC;
+  const key = rowToEmotionKey(row);
+
+  // --- (เดิม) นับจำนวนต่อ tick เพื่อกราฟรวม/สัดส่วน ---
+  const bucket = ensureTick(tick);
+  bucket[key] = (bucket[key] || 0) + 1;
+  totals[key] = (totals[key] || 0) + 1;
+
+  // --- (ใหม่) สะสม confidence เพื่อนำไปทำเส้น Y=confidence ---
+  const c = Number(row.confidence);
+  let conf = Number.isFinite(c) ? c : 0;  // 0..1 จากโมเดล
+  if (key === 'not_in_frame') conf = 1;   // ไม่อยู่หน้าจอ = 100%
+  if (!confAgg.has(tick)) confAgg.set(tick, {});
+  const slot = confAgg.get(tick);
+  if (!slot[key]) slot[key] = { sum: 0, count: 0 };
+  slot[key].sum += conf;
+  slot[key].count += 1;
+
+  refreshRealtimeBar();
+
+}
+
+// ===== Real-time stacked bar (แท่งเรียลไทม์) =====
+const WINDOW_TICKS = 30;      // แสดงเฉพาะ 30 ช่วงล่าสุด (อ่านง่าย)
+let barChart = null;
+
+function initRealtimeBarChart(){
+  const ctx = document.getElementById("emotionBarChart").getContext("2d");
+  if (barChart) barChart.destroy();
+
+  barChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: [],  // tick วินาที (0,10,20,...)
+      datasets: EMO_KEYS.map(k => ({
+      __key: k,
+      label: EMO_LABEL[k],
+      data: [],
+      backgroundColor: EMO_BG[k],
+      borderColor: EMO_BORDER[k],
+      borderWidth: 1,
+      grouped: false,          // <<< ทำให้ทุกแท่งอยู่กึ่งกลาง (ไม่จัดช่องแยก)
+      maxBarThickness: 22
+    }))
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    plugins: {
+      legend: { position: "bottom" },
+      title: { display: true, text: "ความมั่นใจเฉลี่ย (%) ต่อเวลา" },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        callbacks: {
+          title: (items) => `t=${items?.[0]?.label || 0}s`,
+          label: (ctx) => `${ctx.dataset.label}: ${ctx.formattedValue}%`
+        }
+      }
+    },
+    interaction: { mode: "nearest", axis: "x", intersect: false },
+    scales: {
+      x: { stacked: false, title: { display: true, text: "เวลาเริ่มช่วง (วินาที)" } },
+      y: {
+        stacked: false,
+        beginAtZero: true,
+        max: 100,                    // ล็อก 0..100
+        ticks: { callback: v => `${v}%` },
+        title: { display: true, text: "Confidence (%)" }
+       }
+      }
+    }
+  });
+}
+
+function refreshRealtimeBar(){
+  if (!barChart) return;
+
+  // set labels (ticks) จาก barCounts และจำกัดหน้าต่างล่าสุด
+  let ticks = Array.from(barCounts.keys()).sort((a,b)=>a-b);
+  if (ticks.length > WINDOW_TICKS) {
+    ticks = ticks.slice(-WINDOW_TICKS);
+  }
+
+  // อัปเดต labels
+  barChart.data.labels = ticks.map(t => String(t));
+
+  // อัปเดต data ต่ออารมณ์ด้วยค่าเฉลี่ยความมั่นใจ (%)
+  barChart.data.datasets.forEach(ds => {
+    const key = ds.__key;
+    ds.data = ticks.map(tk => {
+      const s = confAgg.get(tk)?.[key];
+      const avg = s && s.count ? (s.sum / s.count) : 0;
+      return Math.round(avg * 100); // 0..100
+    });
+  });
+
+  // ยืดความกว้าง canvas เพื่อเลื่อนดูได้ (ถ้าแท่งเยอะ)
+  const cv = barChart.canvas;
+  const PX_PER_BAR = 36; // กว้างต่อคอลัมน์
+  const minW = 680;      // ให้พอดีการ์ด
+  cv.style.width = Math.max(minW, ticks.length * PX_PER_BAR) + "px";
+
+  barChart.update('none');
+}
+
+// Prevent duplicate counting per tick
+const countedTimes = new Set();
+
+function bumpProgressOnce(t) {
+  const key = String(Math.floor(Number(t) || 0));
+  if (countedTimes.has(key)) return;
+  
+  countedTimes.add(key);
+  savedSnapshots += 1;
+  updateProgressFromSnapshots();
+}
+
+// ===== Load models and bind upload =====
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri("./models"),
   faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
@@ -155,386 +516,519 @@ Promise.all([
   faceapi.nets.faceExpressionNet.loadFromUri("./models"),
 ]).then(startVideoUpload);
 
-// ================== Utils ==================
-function formatTime(sec) {
-  if (isNaN(sec)) return "00:00";
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-}
-
-video.addEventListener("loadedmetadata", () => {
-  const container = document.querySelector(".video-container");
-  container.style.width = video.videoWidth + "px";
-  container.style.height = video.videoHeight + "px";
-  video.width = video.videoWidth;
-  video.height = video.videoHeight;
-  if (canvas) {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.style.width = video.videoWidth + "px";
-    canvas.style.height = video.videoHeight + "px";
-  }
-});
-
-video.addEventListener("timeupdate", () => {
-  videoProgress.value = video.currentTime;
-  currentTimeSpan.textContent = formatTime(video.currentTime);
-});
-
-const GROUP_LABELS = [
-  "บวก (Positive)",
-  "กลาง (Neutral)",
-  "ลบ (Negative)",
-  "ไม่อยู่หน้าจอ",
-];
-const EMO_GROUP = {
-  neutral: "กลาง (Neutral)",
-  sad: "ลบ (Negative)",
-  fearful: "ลบ (Negative)",
-  disgusted: "ลบ (Negative)",
-  angry: "ลบ (Negative)",
-  happy: "บวก (Positive)",
-  surprised: "บวก (Positive)",
-};
-function toGroup(row) {
-  if (row.emotion && row.emotion.trim() !== "")
-    return EMO_GROUP[row.emotion.trim()] || "กลาง (Neutral)";
-  if (row.behavior === "ไม่อยู่หน้าจอ") return "ไม่อยู่หน้าจอ";
-  return "กลาง (Neutral)";
-}
-
-let lineChart, pieChart;
-let lineX = [];       // เวลา (วินาที)
-let lineYLabels = []; // ชื่อกลุ่มอารมณ์ (สตริง)
-let pieCounts = {
-  "บวก (Positive)": 0,
-  "กลาง (Neutral)": 0,
-  "ลบ (Negative)": 0,
-  "ไม่อยู่หน้าจอ": 0,
-};
-function initCharts() {
-  const lctx = document.getElementById("emotionLineChart").getContext("2d");
-  if (lineChart) lineChart.destroy();
-  lineChart = new Chart(lctx, {
-    type: "line",
-    data: {
-      labels: lineX,
-      datasets: [
-        {
-          label: "กลุ่มอารมณ์",
-          data: lineYLabels, // ใช้สตริง
-          borderColor: "rgba(75, 192, 192, 1)",
-          pointBackgroundColor: "rgba(75, 192, 192, 1)",
-          borderWidth: 3,
-          pointRadius: 5,
-          pointHoverRadius: 6,
-          tension: 0.1,
-          stepped: true,
-          fill: false,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: "การเปลี่ยนแปลงอารมณ์ตามเวลา (Zoom x1)" },
-      },
-      scales: {
-        x: { title: { display: true, text: "เวลา (วินาที)" } },
-        y: {
-          type: "category",
-          labels: GROUP_LABELS,
-          title: { display: true, text: "กลุ่มอารมณ์" },
-        },
-      },
-    },
-  });
-
-  const pctx = document.getElementById("emotionPieChart").getContext("2d");
-  if (pieChart) pieChart.destroy();
-  pieChart = new Chart(pctx, {
-    type: "pie",
-    data: {
-      labels: GROUP_LABELS,
-      datasets: [
-        {
-          data: GROUP_LABELS.map((lbl) => pieCounts[lbl]),
-          backgroundColor: [
-            "rgba(46,204,113,0.9)", // บวก
-            "rgba(149,165,166,0.9)", // กลาง
-            "rgba(231,76,60,0.9)", // ลบ
-            "rgba(52,73,94,0.9)", // ไม่อยู่หน้าจอ
-          ],
-          borderColor: [
-            "rgba(46,204,113,1)",
-            "rgba(149,165,166,1)",
-            "rgba(231,76,60,1)",
-            "rgba(52,73,94,1)",
-          ],
-          borderWidth: 2,
-          hoverOffset: 12,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: "bottom" },
-        title: { display: true, text: "สัดส่วนอารมณ์โดยรวม" },
-      },
-    },
-  });
-}
-
-function pushSnapshot(row) {
-  const t = Number(row.time || 0);
-  const g = toGroup(row);
-
-  lineX.push(t);
-  lineYLabels.push(g);
-  if (lineX.length > 300) {
-    lineX.shift();
-    lineYLabels.shift();
-  }
-
-  pieCounts[g] = (pieCounts[g] || 0) + 1;
-
-  lineChart.data.labels = lineX;
-  lineChart.data.datasets[0].data = lineYLabels;
-  lineChart.update();
-
-  pieChart.data.datasets[0].data = GROUP_LABELS.map((lbl) => pieCounts[lbl]);
-  pieChart.update();
-}
-
-// กันนับซ้ำต่อเวลา snapshot เช่น 10, 20, 30, ...
-const countedTimes = new Set();
-function bumpProgressOnce(t) {
-  const key = String(Math.floor(Number(t) || 0));
-  if (countedTimes.has(key)) return;   // เคยนับแล้ว -> ไม่เพิ่มซ้ำ
-  countedTimes.add(key);
-  savedSnapshots += 1;
-  updateProgressFromSnapshots();
-}
-
-// ================== ตรวจจับ + ส่ง snapshot ทุก 10 วิ ==================
 function startVideoUpload() {
-  const videoUpload = document.getElementById("videoUpload");
-  const snapshotContainer = document.getElementById("snapshotContainer");
-  let canvas;
-
-  videoUpload.addEventListener("change", async () => {
-    const file = videoUpload.files[0];
+  fileInputEl.addEventListener('change', async () => {
+    const file = fileInputEl.files?.[0];
     if (!file) return;
-
-    // รีเซ็ต progress และ UI ให้กลับเป็นสถานะกำลังประมวลผล
+    
+    // HERO → APP
+    hero.classList.add('hidden');
+    app.classList.remove('hidden');
+    
+    if (fileNameEl) fileNameEl.textContent = file.name;
+    toast('เริ่มวิเคราะห์วิดีโอ…');
+    
+    // Reset progress/graphs
     savedSnapshots = 0;
     expectedSnapshots = 0;
     countedTimes.clear();
-    if (processingTitle) processingTitle.textContent = 'กำลังประมวลผลวิดีโอ';
-    if (summaryLink) summaryLink.classList.add('hidden');
+    
+    processingTitle.textContent = 'กำลังประมวลผลวิดีโอ';
+    summaryLink.classList.add('hidden');
     updateProgressFromSnapshots();
+    
+    barCounts = new Map();
+    totals = EMO_KEYS.reduce((a, k) => {
+      a[k] = 0;
+      return a;
+    }, {});
+    confAgg = new Map()
+    
+    // แทน initCharts();
+    initRealtimeBarChart();
+    refreshRealtimeBar(); // เคลียร์หน้าจอกราฟให้ว่างก่อนเริ่ม
 
-    // 1) รีเซ็ตตัวนับ/กราฟ/สถานะ
-    savedSnapshots = 0;
-    expectedSnapshots = 0;
-    countedTimes.clear();
-    updateProgressFromSnapshots();
-
-    lineX.length = 0;
-    lineYLabels.length = 0;
-    pieCounts = { "บวก (Positive)":0, "กลาง (Neutral)":0, "ลบ (Negative)":0, "ไม่อยู่หน้าจอ":0 };
-    initCharts(); // รีอินิตกราฟให้สะอาด
-
-    // 2) ล้าง CSV สำหรับรอบใหม่นี้
-    await fetch("http://127.0.0.1:5000/api/clear_snapshots", { method: "POST" });
-
-    // 3) โหลดและเล่นคลิป
+    
+    // Clear CSV for new session
+    await fetch("http://127.0.0.1:5000/api/clear_snapshots", {
+      method: "POST"
+    });
+    
+    // Play video
     video.src = URL.createObjectURL(file);
     video.load();
-    video.play().catch((err) => console.error("ไม่สามารถเล่นวิดีโอ:", err));
+    
+    video.play().catch(err => {
+      console.error("ไม่สามารถเล่นวิดีโอ:", err);
+      toast('เล่นวิดีโอไม่สำเร็จ', 'err');
+    });
   });
-
+  
+  // Canvas + Detection
+  function getDisplaySize() {
+    const rect = videoContainer.getBoundingClientRect();
+    return {
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  }
+  
+  function resizeCanvas() {
+    if (!canvas) return;
+    
+    const { width, height } = getDisplaySize();
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+  }
+  
   function startDetection() {
-    function resizeCanvasToVideo() {
-      if (!canvas) return;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.style.width = video.videoWidth + "px";
-      canvas.style.height = video.videoHeight + "px";
-    }
-
-    video.addEventListener("loadedmetadata", resizeCanvasToVideo);
-    video.addEventListener("resize", resizeCanvasToVideo);
-
+    video.addEventListener("loadedmetadata", () => {
+      updateAspect();
+      resizeCanvas();
+      
+      try {
+        tracker.maxDist = Math.max(video.videoWidth, video.videoHeight) * 0.22;
+        tracker.maxMiss = 240;
+        tracker.descThreshold = 0.62;
+      } catch {}
+    });
+    
+    window.addEventListener("resize", resizeCanvas);
+    
     canvas = faceapi.createCanvasFromMedia(video);
-    document.querySelector(".video-container").appendChild(canvas);
-    resizeCanvasToVideo();
-
-    let lastSnapshotSec = -1;
-    let isFetching = false;
-
+    videoContainer.appendChild(canvas);
+    resizeCanvas();
+    
+    let lastSnapshotSec = -1, isFetching = false;
+    
     async function onFrame() {
       try {
         if (video.paused || video.ended) {
           requestAnimationFrame(onFrame);
           return;
         }
-
+        
         const detections = await faceapi
-          .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.3 }))
+          .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({
+            inputSize: 512,
+            scoreThreshold: 0.3
+          }))
           .withFaceLandmarks()
-          .withFaceExpressions();
-
-        const displaySize = { width: video.videoWidth, height: video.videoHeight };
+          .withFaceExpressions()
+          .withFaceDescriptors();
+        
+        const displaySize = getDisplaySize();
         faceapi.matchDimensions(canvas, displaySize);
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
-
+        const drawDetections = faceapi.resizeResults(detections, displaySize);
+        
+        const tracked = tracker.update(detections);
+        const trackedForDraw = faceapi.resizeResults(tracked, displaySize);
+        
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        faceapi.draw.drawDetections(canvas, resizedDetections, { withScore: false });
-        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-        faceapi.draw.drawFaceExpressions(canvas, resizedDetections, { minConfidence: 0.1, fontSize: 14 });
-
-        const nowSec = Math.floor(video.currentTime);
-
-        // ไม่มีใบหน้า
-        if (resizedDetections.length === 0) {
-          if (nowSec % 10 === 0 && nowSec !== lastSnapshotSec && nowSec >= 10 && !isFetching) {
-            lastSnapshotSec = nowSec;
-            const sw = video.videoWidth, sh = video.videoHeight;
-            const tempCanvas = document.createElement("canvas");
-            tempCanvas.width = sw; tempCanvas.height = sh;
-            tempCanvas.getContext("2d").drawImage(video, 0, 0, sw, sh);
-
-            const imgSrc = tempCanvas.toDataURL("image/png");
-            isFetching = true;
-            fetch("http://127.0.0.1:5000/api/analyze", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ image: imgSrc, time: nowSec, emotion: "", confidence: "", behavior: "ไม่อยู่หน้าจอ" }),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                addSnapshotCard({
-                  imgSrc,
-                  time: nowSec,
-                  emotion: "",
-                  confidence: "",
-                  behavior: data.behavior,
-                  eye_status: data.eye_status,
-                  roll: data.roll,
-                  pitch: data.pitch,
-                  yaw: data.yaw,
-                });
-                bumpProgressOnce(nowSec); // นับครั้งเดียว/เวลา
-              })
-              .finally(() => { isFetching = false; });
-          }
-        }
-
-        // มีใบหน้า
-        resizedDetections.forEach((detection) => {
-          const box = detection.detection.box;
-          const nowSec2 = Math.floor(video.currentTime);
-          if (nowSec2 % 10 === 0 && nowSec2 !== lastSnapshotSec && !isFetching && nowSec2 >= 10) {
-            lastSnapshotSec = nowSec2;
-
-            const sw = 500, sh = 600;
-            const sx = Math.max(0, box.x + box.width / 2 - sw / 2);
-            const sy = Math.max(0, box.y + box.height / 2 - sh / 2);
-            const tempCanvas = document.createElement("canvas");
-            tempCanvas.width = sw; tempCanvas.height = sh;
-            tempCanvas.getContext("2d").drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
-
-            const sorted = Object.entries(detection.expressions || {}).sort((a, b) => b[1] - a[1]);
-            const [mainEmotion, mainScore] = sorted[0] || ["neutral", 0];
-
-            const imgSrc = tempCanvas.toDataURL("image/png");
-            isFetching = true;
-            fetch("http://127.0.0.1:5000/api/analyze", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ image: imgSrc, time: nowSec2, emotion: mainEmotion, confidence: mainScore }),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                addSnapshotCard({
-                  imgSrc,
-                  time: nowSec2,
-                  emotion: mainEmotion,
-                  confidence: mainScore,
-                  behavior: data.behavior,
-                  eye_status: data.eye_status,
-                  roll: data.roll,
-                  pitch: data.pitch,
-                  yaw: data.yaw,
-                });
-                bumpProgressOnce(nowSec2); // นับครั้งเดียว/เวลา
-              })
-              .finally(() => { isFetching = false; });
-          }
+        
+        faceapi.draw.drawDetections(canvas, trackedForDraw, { withScore: false });
+        faceapi.draw.drawFaceLandmarks(canvas, trackedForDraw);
+        faceapi.draw.drawFaceExpressions(canvas, drawDetections, {
+          minConfidence: 0.1,
+          fontSize: 14
         });
+        
+        const nowSec = Math.floor(video.currentTime);
+        const tick = 10;
+        
+        if (detections.length === 0) {
+          if (nowSec % tick === 0 && nowSec !== lastSnapshotSec && nowSec >= tick && !isFetching) {
+            lastSnapshotSec = nowSec;
+            isFetching = true;
+            
+            const sw = video.videoWidth;
+            const sh = video.videoHeight;
+            
+            const tmp = document.createElement("canvas");
+            tmp.width = sw;
+            tmp.height = sh;
+            
+            tmp.getContext("2d", { willReadFrequently: true })
+              .drawImage(video, 0, 0, sw, sh);
+            
+            const frames = [{
+              image: tmp.toDataURL("image/png"),
+              time: nowSec,
+              person_id: null,
+              bbox: "0,0,0,0",
+              emotion: "",
+              confidence: ""
+            }];
+            
+            fetch("http://127.0.0.1:5000/api/analyze_batch", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ frames })
+            })
+              .then(r => r.json())
+              .then(({ rows }) => {
+                const row = rows && rows[0] 
+                  ? rows[0] 
+                  : { time: nowSec, behavior: "ไม่อยู่หน้าจอ" };
+                
+                addSnapshotCard({
+                  imgSrc: frames[0].image,
+                  time: row.time,
+                  person_id: row.person_id || null,
+                  emotion: row.emotion,
+                  confidence: row.confidence,
+                  behavior: row.behavior,
+                  eye_status: row.eye_status,
+                  roll: row.roll,
+                  pitch: row.pitch,
+                  yaw: row.yaw
+                });
+                
+                bumpProgressOnce(nowSec);
+              })
+              .finally(() => {
+                isFetching = false;
+              });
+          }
+        } else if (nowSec % tick === 0 && nowSec !== lastSnapshotSec && !isFetching && nowSec >= tick) {
+          lastSnapshotSec = nowSec;
+          isFetching = true;
+          
+          const frames = tracked.map(det => {
+            const box = det.detection.box;
+            const sw = 500, sh = 600;
+            
+            const cx = box.x + box.width / 2;
+            const cy = box.y + box.height / 2;
+            
+            const sx = Math.max(0, Math.min(video.videoWidth - sw, cx - sw / 2));
+            const sy = Math.max(0, Math.min(video.videoHeight - sh, cy - sh / 2));
+            
+            const tmp = document.createElement("canvas");
+            tmp.width = sw;
+            tmp.height = sh;
+            
+            tmp.getContext("2d", { willReadFrequently: true })
+              .drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+            
+            const sorted = Object.entries(det.expressions || {})
+              .sort((a, b) => b[1] - a[1]);
+            
+            const [emo, score] = sorted[0] || ["neutral", 0];
+            
+            return {
+              image: tmp.toDataURL("image/png"),
+              time: nowSec,
+              person_id: det.person_id,
+              bbox: `${Math.round(box.x)},${Math.round(box.y)},${Math.round(box.width)},${Math.round(box.height)}`,
+              emotion: emo,
+              confidence: score
+            };
+          });
+          
+          fetch("http://127.0.0.1:5000/api/analyze_batch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ frames })
+          })
+            .then(r => r.json())
+            .then(({ rows }) => {
+              rows.forEach((row, i) => {
+                addSnapshotCard({
+                  imgSrc: frames[i]?.image || frames[0].image,
+                  time: row.time,
+                  emotion: row.emotion,
+                  person_id: row.person_id || null,
+                  confidence: row.confidence,
+                  behavior: row.behavior,
+                  eye_status: row.eye_status,
+                  roll: row.roll,
+                  pitch: row.pitch,
+                  yaw: row.yaw
+                });
+                
+                addIdSnapshot({
+                  person_id: row.person_id || null,
+                  imgSrc: frames[i]?.image || frames[0].image,
+                  time: row.time,
+                  emotion: row.emotion,
+                  confidence: row.confidence
+                });
+              });
+              
+              bumpProgressOnce(nowSec);
+            })
+            .finally(() => {
+              isFetching = false;
+            });
+        }
       } catch (err) {
-        console.error("❌ onFrame error:", err);
+        console.error("onFrame error:", err);
       }
+      
       requestAnimationFrame(onFrame);
     }
+    
     onFrame();
   }
-
+  
   video.addEventListener("play", () => {
     if (canvas) canvas.remove();
     canvas = null;
+    
     if (video.readyState < 2) {
       video.addEventListener("canplay", startDetection, { once: true });
     } else {
       startDetection();
     }
   });
-
-  // ===== โหลดข้อมูลเดิม + เชื่อม SSE สำหรับอัปเดตสด =====
+  
+  // Bootstrap charts + SSE
   (async function bootstrapCharts() {
-    initCharts();
+    // แทน initCharts();
+    initRealtimeBarChart();
+    refreshRealtimeBar(); // เคลียร์หน้าจอกราฟให้ว่างก่อนเริ่ม
+
+    
     try {
       const res = await fetch("http://127.0.0.1:5000/api/snapshots");
       const csvText = await res.text();
       const rows = csvText.split("\n").slice(1).filter(Boolean);
-
-      // เซ็ตค่าเริ่มและกันนับซ้ำกับ SSE
-      savedSnapshots = rows.length;
+      
       countedTimes.clear();
-      for (const line of rows) {
-        const [, time] = line.split(",");
-        countedTimes.add(String(Math.floor(Number(time) || 0)));
-      }
+      
+      rows.forEach(line => {
+        const parts = line.split(",");
+        const t = parts[1];
+        countedTimes.add(String(Math.floor(Number(t) || 0)));
+      });
+      
+      savedSnapshots = countedTimes.size;
       updateProgressFromSnapshots();
-
-      // เติมกราฟจาก CSV
-      rows.forEach((line) => {
-        const [timestamp, time, emotion, confidence, behavior, eye_status, pitch, yaw, roll] = line.split(",");
-        pushSnapshot({ timestamp, time, emotion, confidence, behavior, eye_status, pitch, yaw, roll });
+      
+      rows.forEach(line => {
+        const p = line.split(",");
+        if (p.length < 11) return;
+        
+        const [timestamp, time] = [p[0], Number(p[1] || 0)];
+        const [emotion, confidence, behavior, eye_status, pitch, yaw, roll] = p.slice(-7);
+        
+        pushSnapshot({
+          timestamp,
+          time,
+          emotion,
+          confidence,
+          behavior,
+          eye_status,
+          pitch,
+          yaw,
+          roll
+        });
       });
     } catch (e) {
       console.warn("โหลด CSV เริ่มต้นไม่สำเร็จ", e);
     }
-
+    
     setLive("connecting");
+    
     const es = new EventSource("http://127.0.0.1:5000/api/stream");
+    
     es.onopen = () => setLive("live");
     es.onerror = () => setLive("offline");
+    
     es.onmessage = (evt) => {
       try {
         const row = JSON.parse(evt.data);
         pushSnapshot(row);
-        bumpProgressOnce(row.time); // นับครั้งเดียว/เวลา
+        bumpProgressOnce(row.time);
       } catch (e) {
         console.error("SSE parse error:", e);
       }
     };
   })();
+}
+
+// ===== Tracker =====
+class SimpleTracker {
+  constructor(maxDist = 120, maxMiss = 45, descThreshold = 0.55) {
+    this.maxDist = maxDist;
+    this.maxMiss = maxMiss;
+    this.descThreshold = descThreshold;
+    this.nextId = 1;
+    this.tracks = new Map();
+    this.registry = new Map();
+  }
+  
+  _dist(a, b) {
+    const dx = a.cx - b.cx;
+    const dy = a.cy - b.cy;
+    return Math.hypot(dx, dy);
+  }
+  
+  _dDesc(a, b) {
+    if (!a || !b) return Infinity;
+    
+    try {
+      return faceapi.euclideanDistance(a, b);
+    } catch {
+      let s = 0;
+      for (let i = 0; i < Math.min(a.length, b.length); i++) {
+        const d = a[i] - b[i];
+        s += d * d;
+      }
+      return Math.sqrt(s);
+    }
+  }
+  
+  _mergeDesc(oldD, newD, alpha = 0.7) {
+    if (!oldD) return new Float32Array(newD);
+    
+    const out = new Float32Array(newD.length);
+    for (let i = 0; i < newD.length; i++) {
+      out[i] = alpha * oldD[i] + (1 - alpha) * newD[i];
+    }
+    
+    let n = 0;
+    for (let i = 0; i < out.length; i++) {
+      n += out[i] * out[i];
+    }
+    
+    n = Math.sqrt(n) || 1;
+    for (let i = 0; i < out.length; i++) {
+      out[i] /= n;
+    }
+    
+    return out;
+  }
+  
+  update(detections) {
+    const dets = detections.map(d => {
+      const box = d.detection.box;
+      const cx = box.x + box.width / 2;
+      const cy = box.y + box.height / 2;
+      return { ...d, cx, cy };
+    });
+    
+    for (const t of this.tracks.values()) {
+      t.miss++;
+    }
+    
+    for (const det of dets) {
+      let bestId = null;
+      let bestDesc = Infinity;
+      let bestGeo = Infinity;
+      
+      for (const [id, t] of this.tracks) {
+        const dDesc = this._dDesc(det.descriptor, t.descriptor);
+        const dGeo = this._dist(det, t);
+        
+        if (dDesc <= this.descThreshold && dGeo <= this.maxDist) {
+          if (dDesc < bestDesc || (Math.abs(dDesc - bestDesc) < 1e-6 && dGeo < bestGeo)) {
+            bestId = id;
+            bestDesc = dDesc;
+            bestGeo = dGeo;
+          }
+        }
+      }
+      
+      if (bestId == null) {
+        for (const [id, reg] of this.registry) {
+          const dDesc = this._dDesc(det.descriptor, reg.descriptor);
+          if (dDesc <= (this.descThreshold + 0.05)) {
+            bestId = id;
+            break;
+          }
+        }
+      }
+      
+      if (bestId != null) {
+        let t = this.tracks.get(bestId);
+        if (!t) {
+          t = {
+            cx: det.cx,
+            cy: det.cy,
+            miss: 0,
+            descriptor: new Float32Array(det.descriptor)
+          };
+          this.tracks.set(bestId, t);
+        }
+        
+        t.cx = det.cx;
+        t.cy = det.cy;
+        t.miss = 0;
+        t.descriptor = this._mergeDesc(t.descriptor, det.descriptor);
+        
+        const reg = this.registry.get(bestId) || { descriptor: null, count: 0 };
+        reg.descriptor = this._mergeDesc(reg.descriptor, det.descriptor);
+        reg.count++;
+        this.registry.set(bestId, reg);
+        
+        det.person_id = bestId;
+      } else {
+        let cId = null;
+        let cBest = Infinity;
+        
+        for (const [id, t] of this.tracks) {
+          const dGeo = this._dist(det, t);
+          if (dGeo < cBest && dGeo <= this.maxDist) {
+            cBest = dGeo;
+            cId = id;
+          }
+        }
+        
+        if (cId != null) {
+          const t = this.tracks.get(cId);
+          t.cx = det.cx;
+          t.cy = det.cy;
+          t.miss = 0;
+          t.descriptor = this._mergeDesc(t.descriptor, det.descriptor);
+          det.person_id = cId;
+        } else {
+          const id = this.nextId++;
+          const desc = new Float32Array(det.descriptor);
+          
+          this.tracks.set(id, {
+            cx: det.cx,
+            cy: det.cy,
+            miss: 0,
+            descriptor: desc
+          });
+          
+          this.registry.set(id, {
+            descriptor: new Float32Array(desc),
+            count: 1
+          });
+          
+          det.person_id = id;
+        }
+      }
+    }
+    
+    for (const [id, t] of [...this.tracks]) {
+      if (t.miss > this.maxMiss) {
+        const reg = this.registry.get(id) || { descriptor: null, count: 0 };
+        reg.descriptor = this._mergeDesc(reg.descriptor, t.descriptor);
+        reg.count++;
+        this.registry.set(id, reg);
+        this.tracks.delete(id);
+      }
+    }
+    
+    return dets;
+  }
+}
+
+const tracker = new SimpleTracker();
+
+// ===== Utils =====
+function formatTime(sec) {
+  if (isNaN(sec)) return "00:00";
+  
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }

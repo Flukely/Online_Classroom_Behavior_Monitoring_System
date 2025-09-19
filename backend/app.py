@@ -52,58 +52,54 @@ def stream():
 def save_snapshot_to_csv(data):
     file_exists = os.path.isfile(CSV_PATH)
     with open(CSV_PATH, mode="a", encoding="utf-8", newline="") as f:
-        fieldnames = ["timestamp","time","emotion","confidence","behavior","eye_status","pitch","yaw","roll"]
+        fieldnames = ["timestamp","time","person_id","bbox","emotion","confidence","behavior","eye_status","pitch","yaw","roll"]
         w = csv.DictWriter(f, fieldnames=fieldnames)
         if not file_exists: w.writeheader()
         w.writerow(data)
     publish_snapshot(data)  # ส่งอีเวนต์ทุกครั้งที่เขียน
 
-@app.route('/api/analyze', methods=['POST'])
-def analyze_snapshot():
+@app.route('/api/analyze_batch', methods=['POST'])
+def analyze_batch():
     try:
-        if not request.is_json: return jsonify({'error':'Request must be JSON'}), 400
-        data = request.get_json()
-        if not data or 'image' not in data: return jsonify({'error':'Missing image data'}), 400
+        payload = request.get_json()
+        frames = payload.get("frames", [])  # [{image, time, person_id, emotion, confidence}, ...]
+        rows = []
+        for f in frames:
+            frame = base64_to_cv2(f["image"])
+            result = analyze_behavior(frame)
+            row = {
+                "timestamp": datetime.datetime.now().isoformat(),
+                "time": f.get("time", None),
+                "person_id": f.get("person_id", None),
+                "bbox": f.get("bbox", None),   # "x,y,w,h"
+                "emotion": f.get("emotion", ""),
+                "confidence": f.get("confidence", ""),
+                "behavior": result["behavior"],
+                "eye_status": result["eye_status"],
+                "pitch": result["pitch"],
+                "yaw": result["yaw"],
+                "roll": result["roll"]
+            }
+            save_snapshot_to_csv(row)
+            rows.append(row)
+        return jsonify({"status": "success", "count": len(rows), "rows": rows})
+    except Exception:
+        logger.error("batch fail", exc_info=True)
+        return jsonify({"error":"Internal server error"}), 500
 
-        frame = base64_to_cv2(data['image'])
-        if frame is None: return jsonify({'error':'Invalid image data'}), 400
-
-        result = analyze_behavior(frame)
-
-        timestamp = datetime.datetime.now().isoformat()
-        row = {
-            "timestamp": timestamp,
-            "time": data.get("time", None),
-            "emotion": data.get("emotion", ""),
-            "confidence": data.get("confidence", ""),
-            "behavior": result["behavior"],
-            "eye_status": result["eye_status"],
-            "pitch": result["pitch"],
-            "yaw": result["yaw"],
-            "roll": result["roll"]
-        }
-        save_snapshot_to_csv(row)
-
-        return jsonify({
-            'status':'success', 'behavior':result['behavior'],
-            'pitch':result['pitch'],'yaw':result['yaw'],'roll':result['roll'],
-            'eye_status':result['eye_status'],'timestamp':timestamp
-        })
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}", exc_info=True)
-        return jsonify({'error':'Internal server error'}), 500
+CSV_HEADER = "timestamp,time,person_id,bbox,emotion,confidence,behavior,eye_status,pitch,yaw,roll\n"
 
 @app.route('/api/snapshots', methods=['GET'])
 def get_snapshots_csv():
     try:
         return open(CSV_PATH, encoding="utf-8").read(), 200, {'Content-Type': 'text/csv; charset=utf-8'}
     except Exception:
-        return "timestamp,time,emotion,confidence,behavior,eye_status,pitch,yaw,roll\n", 200, {'Content-Type': 'text/csv; charset=utf-8'}
+        return CSV_HEADER, 200, {'Content-Type': 'text/csv; charset=utf-8'}
 
 @app.route('/api/clear_snapshots', methods=['POST'])
 def clear_snapshots():
     with open(CSV_PATH, 'w', encoding="utf-8", newline="") as f:
-        f.write("timestamp,time,emotion,confidence,behavior,eye_status,pitch,yaw,roll\n")
+        f.write(CSV_HEADER)
     return jsonify({'status':'success'})
 
 if __name__ == '__main__':
