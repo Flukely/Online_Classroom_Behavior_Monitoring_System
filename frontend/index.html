@@ -1,48 +1,69 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="light">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Classroom Analyzer — Upload & Analyze</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css"/>
 </head>
-
 <body>
 
   <!-- Topbar -->
   <nav class="topbar">
     <div class="topbar__left">
       <div class="brand">🎓 Classroom Analyzer</div>
-      <a class="toplink" href="#how">วิธีใช้งาน</a>
-      <a class="toplink" href="#features">ฟีเจอร์</a>
+      <button id="openHow" class="btn btn-ghost">วิธีใช้งาน</button>
+      <button id="openFeatures" class="btn btn-ghost">ฟีเจอร์</button>
     </div>
     <div class="topbar__right">
-      <!-- <a class="btn btn-ghost" href="summary.html" id="goSummary">ดูสรุป</a> -->
+      <!-- <button id="openNoti" class="btn btn-ghost" aria-label="แจ้งเตือน">
+        🔔
+        <span id="notiBadge" class="badge-dot" aria-hidden="true">0</span>
+      </button> -->
       <label class="theme-toggle" title="สลับโหมดสว่าง/มืด">
-        <input type="checkbox" id="themeToggle" />
+        <input type="checkbox" id="themeToggle"/>
         <span class="slider"></span>
       </label>
     </div>
   </nav>
 
-  <!-- HERO: หน้าอัปโหลด -->
+  <!-- HERO: หน้าอัปโหลด (เดิมของคุณ) -->
   <header id="uploadHero" class="hero">
-    <h1 class="hero-title">อัปโหลดวิดีโอเพื่อวิเคราะห์พฤติกรรมในชั้นเรียน</h1>
-    <p class="hero-lead">รองรับหลายใบหน้าพร้อมกัน • มีกราฟสรุปผล • ทำงานบนเครื่องคุณ</p>
+    <h1 class="hero-title">อัปโหลดเพื่อวิเคราะห์พฤติกรรมการเรียน</h1>
+    <p class="hero-lead">เลือกระหว่างวิดีโอใหม่ หรือใช้ไฟล์ CSV จาก Classroom Analyzer</p>
 
-    <div class="hero-card" id="dropZone">
-      <div class="hero-cloud">
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-          <path d="M20 48h24a12 12 0 0 0 2.3-23.8A16 16 0 0 0 17.7 20C11.6 20 6.7 24.9 6.7 31s5 11 11.1 11H20z"
-            fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M32 40V24m0 0l-6 6m6-6l6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-            stroke-linejoin="round" />
-        </svg>
-      </div>
-      <p class="hero-sub">ลากไฟล์มาวาง หรือกดปุ่มด้านล่าง</p>
-      <button id="selectFilesBtn" class="hero-btn" aria-label="เลือกไฟล์วิดีโอสำหรับวิเคราะห์">เลือกไฟล์วิดีโอ</button>
-      <p class="hero-hint">รองรับไฟล์วิดีโอทั่วไป เช่น MP4 / MOV</p>
+    <div class="uploader-grid">
+      <!-- LEFT: VIDEO -->
+      <section class="uploader-card" id="dropZoneVideo">
+        <header class="uploader-head">
+          <h2>วิดีโอสำหรับวิเคราะห์</h2>
+          <p class="uploader-sub">ลากไฟล์มาวาง หรือกดปุ่มด้านล่าง (MP4/MOV)</p>
+        </header>
+        <div class="uploader-droparea">
+          <div class="uploader-illustration">🎥</div>
+          <p class="uploader-hint">วางไฟล์วิดีโอที่นี่</p>
+        </div>
+        <footer class="uploader-actions">
+          <button id="selectFilesBtnVideo" class="btn btn-primary">เลือกไฟล์วิดีโอ</button>
+          <div id="fileName" class="uploader-file"></div>
+        </footer>
+      </section>
+
+      <!-- RIGHT: CSV -->
+      <section class="uploader-card" id="dropZoneCsv">
+        <header class="uploader-head">
+          <h2>CSV ที่ดาวน์โหลดจากระบบ</h2>
+          <p class="uploader-sub">ลากไฟล์มาวาง หรือกดปุ่มด้านล่าง (เฉพาะไฟล์จาก Classroom Analyzer)</p>
+        </header>
+        <div class="uploader-droparea">
+          <div class="uploader-illustration">📄</div>
+          <p class="uploader-hint">วางไฟล์ CSV ที่นี่</p>
+        </div>
+        <footer class="uploader-actions">
+          <button id="selectCsvBtn" class="btn btn-ghost">เลือกไฟล์ CSV</button>
+          <div id="csvFileName" class="uploader-file"></div>
+        </footer>
+      </section>
     </div>
 
     <!-- Section: feature badges -->
@@ -55,12 +76,12 @@
       <div class="feature">
         <div class="feature__icon">🧩</div>
         <h3>ติดตามบุคคล (ID)</h3>
-        <p>ระบบจับคู่ใบหน้าอย่างต่อเนื่อง เพื่อสรุปผลแยกตามคน</p>
+        <p>ระบบจับคู่ใบหน้าอย่างต่อเนื่อง เพื่อสรุปผล</p>
       </div>
       <div class="feature">
         <div class="feature__icon">📊</div>
         <h3>สรุปผลชัดเจน</h3>
-        <p>มีกราฟเส้น/วงกลม • หน้ารวม (Summary) พร้อมตารางขาดหน้าจอ</p>
+        <p>มีกราฟเส้น/วงกลม • หน้าสรุปผล พร้อมวิเคราะห์ช่วงไม่อยู่หน้าจอ</p>
       </div>
     </section>
 
@@ -114,13 +135,13 @@
           </div>
         </div>
         <aside class="tip">
-          💡 เลื่อนดูได้: หากเวลาเยอะ ระบบจะยืดกราฟและเลื่อนแนวนอนได้อัตโนมัติ
+          💡 หากวิดีโอมีเวลาเยอะ ระบบจะยืดกราฟและเลื่อนแนวนอนได้อัตโนมัติ
         </aside>
       </div>
     </div>
 
     <!-- Debug -->
-    <div class="debug-toolbar" role="group" aria-label="สแน็ปช็อตดีบั๊ก">
+    <!-- <div class="debug-toolbar" role="group" aria-label="สแน็ปช็อตดีบั๊ก">
       <button id="toggleDebugBtn">แสดง/ซ่อน Snapshot (Debug)</button>
       <button id="clearDebugBtn">ล้าง Snapshot บนหน้า</button>
     </div>
@@ -129,21 +150,105 @@
       <div id="snapshotContainer" class="snapshots-grid" aria-live="polite"></div>
       <h2 style="margin-top:16px;">Per-ID Gallery (Debug)</h2>
       <div id="idGalleryContainer" class="id-gallery"></div>
-    </div>
+    </div> -->
   </main>
 
 
-  <!-- global file input -->
-  <input type="file" id="videoUpload" accept="video/*" class="hidden-input" />
+<!-- global file inputs -->
+  <input type="file" id="videoUpload" accept="video/*" class="hidden-input"/>
+  <input type="file" id="csvUpload" accept=".csv,text/csv" class="hidden-input"/>
 
-  <!-- toast -->
+  <!-- toast host (เดิม) -->
   <div id="toastHost" class="toast-host"></div>
+
+  <!-- Modals -->
+  <div id="modalBackdrop" class="modal-backdrop" hidden></div>
+
+  <!-- Modal: วิธีใช้งาน -->
+  <section id="modalHelp" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalHelpTitle" hidden>
+    <div class="modal__dialog">
+      <header class="modal__header">
+        <h3 id="modalHelpTitle">วิธีใช้งาน</h3>
+        <button class="modal__close" data-close-modal>✕</button>
+      </header>
+      <div class="modal__body">
+        <ol class="howto-list">
+          <li>เลือก “วิดีโอสำหรับวิเคราะห์” แล้วรอระบบประมวลผลทุก ๆ 10 วินาที</li>
+          <li>หรือ “อัปโหลด CSV” ที่ได้จากระบบเราเพื่อดูสรุปย้อนหลัง</li>
+          <li>ไปหน้าสรุปผลเพื่อดูกราฟ/ตารางสรุป และดาวน์โหลด CSV ได้</li>
+        </ol>
+        <p class="muted">เคล็ดลับ: ใช้ไฟล์วิดีโอที่เห็นหน้าชัด, แสงเพียงพอ จะได้ผลแม่นยำขึ้น</p>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn btn-primary" data-close-modal>เข้าใจแล้ว</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- Modal: ฟีเจอร์ -->
+  <section id="modalFeatures" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalFeaturesTitle" hidden>
+    <div class="modal__dialog">
+      <header class="modal__header">
+        <h3 id="modalFeaturesTitle">ฟีเจอร์เด่น</h3>
+        <button class="modal__close" data-close-modal>✕</button>
+      </header>
+      <div class="modal__body">
+        <ul class="feature-list">
+          <li>วิเคราะห์อารมณ์หลายประเภทแบบเรียลไทม์</li>
+          <li>ติดตามบุคคล (ID) ต่อเนื่องจากเฟรม</li>
+          <li>สรุปกราฟ/ตาราง และดาวน์โหลด CSV (UTF-8+BOM)</li>
+          <li>อัปโหลด CSV ที่เคยดาวน์โหลดจากระบบ เพื่อตรวจทวนย้อนหลัง</li>
+        </ul>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn btn-primary" data-close-modal>ปิด</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- Modal: ศูนย์แจ้งเตือน -->
+  <section id="modalNoti" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalNotiTitle" hidden>
+    <div class="modal__dialog">
+      <header class="modal__header">
+        <h3 id="modalNotiTitle">แจ้งเตือน</h3>
+        <button class="modal__close" data-close-modal>✕</button>
+      </header>
+      <div class="modal__body">
+        <div id="notiList" class="noti-list"></div>
+      </div>
+      <footer class="modal__footer">
+        <button id="clearNoti" class="btn btn-ghost">ล้างทั้งหมด</button>
+        <button class="btn btn-primary" data-close-modal>ปิด</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- Modals backdrop -->
+  <div id="modalBackdrop" class="modal-backdrop" hidden></div>
+
+  <!-- (มี modalHelp, modalFeatures, modalNoti เดิมของคุณแล้ว) -->
+
+  <!-- Modal: Alert ศูนย์กลางหน้าจอ -->
+  <section id="modalAlert" class="modal" role="alertdialog" aria-modal="true" aria-labelledby="alertTitle" hidden>
+    <div class="modal__dialog">
+      <header class="modal__header">
+        <h3 id="alertTitle">แจ้งเตือน</h3>
+        <button class="modal__close" data-close-modal>✕</button>
+      </header>
+      <div class="modal__body">
+        <div id="alertContent" class="alert-content">ข้อความแจ้งเตือน</div>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn btn-ghost" data-close-modal>ปิด</button>
+        <button id="alertPrimaryBtn" class="btn btn-primary">ดูสรุปผล</button>
+      </footer>
+    </div>
+  </section>
 
   <footer class="footer">© 2025 Classroom Analyzer</footer>
 
-  <script src="face-api.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="script.js"></script>
+<script src="face-api.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
 </body>
-
 </html>

@@ -5,9 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Classroom Analyzer — Summary</title>
   <link rel="stylesheet" href="summary.css"/>
-  <link rel="stylesheet" href="styles.css"/><!-- ใช้โทนสีร่วม -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- Charts & capture -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- NEW: jsPDF สำหรับประกอบ PDF -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -20,88 +23,85 @@
     </div>
   </nav>
 
-  <!-- PAGE WRAP: ขยายความกว้าง/ระยะหายใจ -->
   <main class="page">
     <h1 class="page-title">สรุปผลการวิเคราะห์พฤติกรรมในชั้นเรียน</h1>
 
-    <!-- แถบเครื่องมือ -->
+    <!-- Toolbar บน -->
     <div class="toolbar" role="toolbar" aria-label="ตัวกรองและมุมมอง">
       <div class="tabs">
-        <button id="tabOverview" class="btn tab active">ภาพรวม</button>
-        <button id="tabMotions" class="btn tab">อารมณ์ทั้งหมด</button>
+        <button id="tabOverview" class="btn tab active">วิเคราะห์ตามพฤติกรรม</button>
+        <button id="tabMotions" class="btn tab">วิเคราะห์อารมณ์ทั้งหมด</button>
       </div>
 
       <div class="filters">
-        <select id="personFilter" class="select">
-          <option value="">ทุกคน</option>
-        </select>
-
-        <div class="zoom-group">
-          <button id="zoom1Btn" class="btn zoom is-active">10 วินาที/ช่วง</button>
-          <button id="zoom2Btn" class="btn zoom" style="display:none">30 วินาที/ช่วง</button>
-          <button id="zoom3Btn" class="btn zoom" style="display:none">60 วินาที/ช่วง</button>
-        </div>
-
-        <button id="reloadChartBtn" class="btn">รีเฟรช</button>
-        <button id="downloadFullBtn" class="btn btn-primary">ดาวน์โหลดสรุปผล</button>
+        <button id="downloadPdfBtn" class="btn btn-primary">ดาวน์โหลด PDF สรุปข้อมูล</button>
+        <button id="downloadCsvBtn" class="btn btn-ghost">ดาวน์โหลดข้อมูลการวิเคราะห์ (ไฟล์ CSV)</button>
+        <span id="uploadedCsvName" class="file-chip" hidden></span>
       </div>
     </div>
 
     <!-- KPI -->
-    <section class="panel">
-      <div class="kpi-grid" id="kpiGrid">
-        <!-- JS เติม -->
-      </div>
+    <section class="panel" id="kpiPanel">
+      <div class="kpi-grid" id="kpiGrid"></div>
     </section>
 
-    <!-- VIEW: OVERVIEW -->
+    <!-- Toolbar Zoom -->
+    <div class="toolbar" role="toolbar" aria-label="ซูมเวลา" id="zoomToolbar">
+      <h4>กรองตามช่วงเวลา:</h4><br/>
+      <div class="zoom-group">
+        <button id="zoom1Btn" class="btn zoom is-active">10 วินาที/ช่วง</button>
+        <button id="zoom2Btn" class="btn zoom" style="display:none">30 วินาที/ช่วง</button>
+        <button id="zoom3Btn" class="btn zoom" style="display:none">60 วินาที/ช่วง</button>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
     <section id="overviewView" class="view view-active">
-      <div class="charts-grid">
-        <!-- LEFT: PIE -->
-        <article class="card chart-card">
-          <header class="card-head">
-            <h3>สัดส่วนตามกลุ่มอารมณ์</h3>
-          </header>
-          <div class="card-body">
-            <canvas id="groupPie" aria-label="กลุ่มอารมณ์"></canvas>
-          </div>
+      <div class="charts-grid" id="overviewGrid">
+        <article class="card chart-card" id="cardPie">
+          <header class="card-head"><h3>สัดส่วนพฤติกรรม</h3></header>
+          <div class="card-body"><canvas id="groupPie" aria-label="กลุ่มอารมณ์"></canvas></div>
           <div id="groupPctList" class="pct-list"></div>
-          <footer class="card-actions">
-            <button class="btn" data-dl="groupPie">ดาวน์โหลด PNG</button>
-          </footer>
         </article>
 
-        <!-- RIGHT: SCATTER -->
-        <article class="card chart-card">
-          <header class="card-head">
-            <h3>พฤติกรรมตามช่วงเวลา</h3>
-          </header>
-          <div class="card-body">
-            <canvas id="groupOverTime" aria-label="กลุ่มอารมณ์ตามเวลา"></canvas>
-          </div>
-          <footer class="card-actions">
-            <button id="downloadCsvBtn" class="btn btn-ghost">บันทึกเป็น CSV</button>
-            <button class="btn" data-dl="groupOverTime">ดาวน์โหลด PNG</button>
-          </footer>
+        <article class="card chart-card" id="cardTime">
+          <header class="card-head"><h3>พฤติกรรมตามช่วงเวลา</h3></header>
+          <div class="card-body"><canvas id="groupOverTime" aria-label="กลุ่มอารมณ์ตามเวลา"></canvas></div>
         </article>
       </div>
     </section>
 
-    <!-- VIEW: EMO7 -->
+    <!-- 7 emotions stacked -->
     <section id="motionsView" class="view">
-      <article class="card chart-card">
-        <header class="card-head">
-          <h3>อารมณ์ทั้งหมด (สัดส่วน % ต่อช่วง)</h3>
-        </header>
-        <div class="card-body">
-          <canvas id="emo7OverTime"></canvas>
-        </div>
-        <footer class="card-actions">
-          <button class="btn" data-dl="emo7OverTime">ดาวน์โหลด PNG</button>
-        </footer>
+      <article class="card chart-card" id="cardEmo7">
+        <header class="card-head"><h3>อารมณ์ทั้งหมด</h3></header>
+        <div class="card-body"><canvas id="emo7OverTime"></canvas></div>
       </article>
     </section>
   </main>
+
+  <!-- ==== Modal: ตั้งชื่อผู้เรียนก่อนดาวน์โหลด CSV ==== -->
+  <div id="nameModalBackdrop" class="modal-backdrop" hidden></div>
+  <section id="nameModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle" hidden>
+    <div class="modal__dialog">
+      <header class="modal__header">
+        <h3 id="nameModalTitle">ตั้งชื่อไฟล์</h3>
+        <button class="modal__close" data-close-name-modal aria-label="ปิด">✕</button>
+      </header>
+      <div class="modal__body">
+        <label for="studentName" class="modal__label">กรุณากรอกชื่อผู้เรียน</label>
+        <input id="studentName" class="modal__input" type="text" placeholder="เช่น ป.3/1_ด.ช.ธีรภัทร" maxlength="60"/>
+        <p class="modal__hint">ชื่อไฟล์จะเป็น: <code>emotion_snapshots_[ชื่อผู้เรียน]_[YYYYMMDD_HHMMSS].csv</code></p>
+        <p id="nameError" class="modal__error" hidden>กรุณากรอกชื่อ (ความยาวไม่เกิน 60 ตัวอักษร)</p>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn btn-ghost" data-close-name-modal>ยกเลิก</button>
+        <button id="confirmNameBtn" class="btn btn-primary">ดาวน์โหลด</button>
+      </footer>
+    </div>
+  </section>
+
+  <footer class="footer">© 2025 Classroom Analyzer</footer>
 
   <script src="summary.js"></script>
 </body>

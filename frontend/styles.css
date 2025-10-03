@@ -688,3 +688,122 @@ a.btn, button.btn{
   min-width: 680px; /* ให้มีพื้นที่เริ่มต้นบนจอเล็ก */
   height: 420px;    /* สูงพออ่าน label */
 }
+/* === Uploaders grid === */
+.uploader-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1fr;
+  width: min(980px, 94vw);
+}
+@media (min-width: 860px) {
+  .uploader-grid { grid-template-columns: 1fr 1fr; }
+}
+.uploader-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+.uploader-head h2 { margin: 0; font-size: 18px; }
+.uploader-sub { font-size: 14px; opacity: .8; }
+.uploader-droparea {
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  padding: 28px 16px;
+  min-height: 150px;
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  transition: background-color .2s, border-color .2s;
+}
+.uploader-card.dragover .uploader-droparea {
+  border-color: var(--primary);
+  background: rgba(14,165,233,0.08);
+}
+.uploader-illustration { font-size: 40px; margin-bottom: 8px; }
+.uploader-hint { opacity:.75; }
+.uploader-actions { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
+.uploader-file { font-size: 13px; color: var(--muted); }
+
+/* ========= Modals ========= */
+.modal-backdrop{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(2px);
+  z-index: 300;
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s ease;
+}
+.modal{
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  z-index: 301;
+  opacity: 0; pointer-events: none;
+  transition: opacity .18s ease;
+}
+.modal[open], .modal:not([hidden]){ opacity:1; pointer-events:auto; }
+.modal-backdrop[open], .modal-backdrop:not([hidden]){ opacity:1; pointer-events:auto; }
+
+.modal__dialog{
+  width: min(720px, 92vw);
+  background: var(--card);
+  color: var(--text);
+  border:1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  transform: translateY(4px) scale(.98);
+  transition: transform .2s ease;
+  overflow: hidden;
+}
+.modal[open] .modal__dialog,
+.modal:not([hidden]) .modal__dialog{
+  transform: translateY(0) scale(1);
+}
+
+.modal__header, .modal__footer{
+  padding: 14px 16px;
+  background: var(--surface);
+  display:flex; align-items:center; gap:10px;
+}
+.modal__header{ justify-content: space-between; }
+.modal__body{ padding: 16px; line-height: 1.6; }
+
+.modal__close{
+  appearance: none; border:1px solid var(--border);
+  background: transparent; color: var(--text);
+  border-radius: 10px; padding: 6px 10px; cursor: pointer;
+}
+.modal__close:hover{ background: var(--card); }
+
+.howto-list{ padding-left: 20px; }
+.howto-list li{ margin: 6px 0; }
+.feature-list{ padding-left: 20px; }
+.feature-list li{ margin: 6px 0; }
+
+.noti-list{ display: grid; gap: 10px; }
+.noti-item{
+  border:1px solid var(--border); border-radius: 12px;
+  padding: 10px 12px; background: var(--card);
+  display:flex; align-items: baseline; gap: 8px;
+}
+.noti-item .tag{
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* badge บนปุ่มกระดิ่ง */
+.badge-dot{
+  margin-left: 6px;
+  min-width: 18px; height: 18px; padding: 0 6px;
+  border-radius: 999px; background: #ef4444; color: #fff;
+  font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center;
+}
+/* ใช้ร่วมกับโมดัลเดิม */
+.alert-content { font-weight: 700; }
+
+/* โทนสีตามชนิดแจ้งเตือน (เสริม) */
+.modal--err .modal__header { background: #fee2e2; }
+.modal--ok  .modal__header { background: #dcfce7; }

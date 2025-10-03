@@ -1,20 +1,28 @@
-// ===== Elements =====
+// ====== Elements ======
 const hero = document.getElementById('uploadHero');
 const app = document.getElementById('appSection');
-const selectFilesBtn = document.getElementById('selectFilesBtn');
-const dropZone = document.getElementById('dropZone');
 const themeToggle = document.getElementById('themeToggle');
 const toastHost = document.getElementById('toastHost');
 
+// อัปโหลด 
 const video = document.getElementById("myVideo");
+const videoInputEl = document.getElementById("videoUpload");
+const csvInputEl   = document.getElementById("csvUpload");
+const dropZoneVideo = document.getElementById("dropZoneVideo");
+const dropZoneCsv   = document.getElementById("dropZoneCsv");
+const selectFilesBtnVideo = document.getElementById("selectFilesBtnVideo");
+const selectCsvBtn        = document.getElementById("selectCsvBtn");
+const fileNameEl   = document.getElementById("fileName");
+const csvFileNameEl= document.getElementById("csvFileName");
+const fileInputEl = videoInputEl;   // alias ให้ videoInputEl
+let canvas = null;                  // ป้องกัน ReferenceError เวลาใช้งาน canvas
+
+// วิดีโอ UI 
+const videoContainer = document.querySelector('.video-container');
+const toggleVideoBtn = document.getElementById('toggleVideoBtn');
 const videoProgress = document.getElementById("videoProgress");
 const currentTimeSpan = document.getElementById("currentTime");
 const totalTimeSpan = document.getElementById("totalTime");
-let canvas;
-
-const toggleVideoBtn = document.getElementById('toggleVideoBtn');
-const videoContainer = document.querySelector('.video-container');
-
 const progressBar = document.getElementById('progressBar');
 const percentText = document.getElementById('percentText');
 const elapsedEl = document.getElementById('elapsed');
@@ -22,24 +30,294 @@ const durationEl = document.getElementById('duration');
 const summaryLink = document.getElementById('summaryLink');
 const processingTitle = document.getElementById('processingTitle');
 
-const fileInputEl = document.getElementById("videoUpload");
-const fileNameEl = document.getElementById("fileName");
-if (selectFilesBtn) selectFilesBtn.onclick = () => fileInputEl.click();
+selectFilesBtnVideo?.addEventListener("click", ()=> videoInputEl.click());
+selectCsvBtn?.addEventListener("click", ()=> csvInputEl.click());
 
-// ===== Helpers (UI) =====
+// ====== Modal Elements ======
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalHelp = document.getElementById('modalHelp');
+const modalFeatures = document.getElementById('modalFeatures');
+const modalNoti = document.getElementById('modalNoti');
+const openHowBtn = document.getElementById('openHow');
+const openFeaturesBtn = document.getElementById('openFeatures');
+const openNotiBtn = document.getElementById('openNoti');
+const notiBadge = document.getElementById('notiBadge');
+const notiList = document.getElementById('notiList');
+const clearNotiBtn = document.getElementById('clearNoti');
+
+// ====== Alert Modal ======
+const modalAlert = document.getElementById('modalAlert');
+const alertTitleEl = document.getElementById('alertTitle');
+const alertContentEl = document.getElementById('alertContent');
+const alertPrimaryBtn = document.getElementById('alertPrimaryBtn'); 
+
+// ====== Modal core ======
+function openModal(modalEl){
+  if (!modalEl) return;
+  modalBackdrop.hidden = false;
+  modalEl.hidden = false;
+  // สำหรับบางเอนจินใช้ attribute open เพื่อให้ CSS จับได้
+  modalBackdrop.setAttribute('open','');
+  modalEl.setAttribute('open','');
+  // เลื่อนโฟกัสไปที่ปุ่มปิดเพื่อ A11y
+  const closer = modalEl.querySelector('[data-close-modal]') || modalEl;
+  setTimeout(()=> closer.focus?.(), 0);
+}
+function closeModal(modalEl){
+  if (!modalEl) return;
+  modalBackdrop.hidden = true;
+  modalEl.hidden = true;
+  modalBackdrop.removeAttribute('open');
+  modalEl.removeAttribute('open');
+}
+// ปิดเมื่อคลิกปุ่ม [✕] หรือปุ่มใน footer ที่ติด data-close-modal
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-close-modal]');
+  if (btn){
+    const m = e.target.closest('.modal');
+    closeModal(m);
+  }
+});
+// ปิดเมื่อคลิกฉากหลัง
+modalBackdrop?.addEventListener('click', ()=>{
+  // ปิดทุกโมดัลที่เปิดอยู่
+  [modalHelp, modalFeatures, modalNoti].forEach(m=>{
+    if (!m.hidden) closeModal(m);
+  });
+});
+// ปิดเมื่อกด ESC
+document.addEventListener('keydown',(e)=>{
+  if (e.key === 'Escape'){
+    [modalHelp, modalFeatures, modalNoti].forEach(m=>{
+      if (!m.hidden) closeModal(m);
+    });
+  }
+});
+
+// ปุ่มเปิดแต่ละโมดัล
+openHowBtn?.addEventListener('click', ()=> openModal(modalHelp));
+openFeaturesBtn?.addEventListener('click', ()=> openModal(modalFeatures));
+openNotiBtn?.addEventListener('click', ()=>{
+  renderNotiList();
+  openModal(modalNoti);
+});
+
+// ====== เปิด Alert กลางหน้าจอ ======
+function openAlert(message, {
+  title = 'แจ้งเตือน',
+  type = 'ok',
+  primaryLabel,            // เช่น 'ดูสรุปผล'
+  primaryHref,             // เช่น 'summary.html?...'
+  primaryOnClick           // ฟังก์ชันทางเลือกถ้าอยากควบคุมเอง
+} = {}) {
+  if (!modalAlert) return;
+
+  // ข้อความ/โทนสี
+  alertTitleEl.textContent = title;
+  alertContentEl.textContent = message;
+  modalAlert.classList.toggle('modal--err', type === 'err');
+  modalAlert.classList.toggle('modal--ok', type !== 'err');
+
+  // ปุ่มหลัก (ซ่อน/แสดง + ผูกเหตุการณ์)
+  if (alertPrimaryBtn) {
+    alertPrimaryBtn.style.display = primaryLabel ? 'inline-flex' : 'none';
+    alertPrimaryBtn.textContent = primaryLabel || '';
+    alertPrimaryBtn.onclick = null;
+    if (primaryLabel) {
+      if (primaryOnClick) {
+        alertPrimaryBtn.onclick = primaryOnClick;
+      } else if (primaryHref) {
+        alertPrimaryBtn.onclick = () => { location.href = primaryHref; };
+      }
+    }
+  }
+
+  openModal(modalAlert);
+}
+
+// ====== Notification Center (เชื่อมกับ toast) ======
+const notiHistory = []; // เก็บประวัติแจ้งเตือนสำหรับศูนย์แจ้งเตือน
+function updateNotiBadge(){ 
+  if (notiBadge) notiBadge.textContent = String(notiHistory.length); 
+  }
+function renderNotiList(){
+  if (!notiList) return;
+  if (!notiHistory.length){
+    notiList.innerHTML = `<div class="muted">ยังไม่มีการแจ้งเตือน</div>`;
+    return;
+  }
+  notiList.innerHTML = notiHistory.slice(-50).reverse().map(n=>{
+    const tone = n.type === 'err' ? '⚠️' : 'ℹ️';
+    return `
+      <div class="noti-item">
+        <span class="tag">${tone}</span>
+        <div>
+          <div><strong>${n.msg}</strong></div>
+          <div class="muted" style="font-size:12px;">เวลา ${fmtTimeShort(new Date(n.ts))}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+function updateNotiBadge(){
+  if (!notiBadge) return;
+  notiBadge.textContent = String(notiHistory.length);
+}
+
+// ----- Toast (override ของเดิม: เก็บลง history ด้วย) -----
 function toast(msg, type = "ok") {
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   el.textContent = msg;
   toastHost.appendChild(el);
-  
+
+  // เก็บประวัติ + อัปเดต badge
+  notiHistory.push({ type, msg, ts: Date.now() });
+  updateNotiBadge();
+
+  openAlert(msg, { title: type === 'err' ? 'เกิดข้อผิดพลาด' : 'แจ้งเตือน', type });
+
   setTimeout(() => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(6px)';
   }, 2600);
-  
+
   setTimeout(() => el.remove(), 3200);
 }
+
+clearNotiBtn?.addEventListener('click', ()=>{
+  notiHistory.length = 0;
+  updateNotiBadge();
+  renderNotiList();
+  toast('ล้างแจ้งเตือนแล้ว');
+});
+
+(function onboardingOnce(){
+  const KEY = 'ca_onboarded_v1';
+  if (!localStorage.getItem(KEY)) {
+    // แสดงโมดัลวิธีใช้งาน
+    openModal(modalHelp);
+    // ทำเครื่องหมายว่าดูแล้ว (กันเด้งซ้ำในครั้งต่อไป)
+    localStorage.setItem(KEY, '1');
+  }
+})();
+
+async function beginAnalysisForFile(file) {
+  if (!file) return;
+  if (!file.type.startsWith("video/")) { toast("กรุณาเลือกไฟล์วิดีโอ", "err"); return; }
+
+  // สลับหน้า Hero → App
+  hero.classList.add('hidden');
+  app.classList.remove('hidden');
+
+  // แสดงชื่อไฟล์ (อัปเดตทั้ง #fileName และ .file-name ถ้ามี)
+  document.querySelectorAll('#fileName, .file-name').forEach(el=>{
+    el.textContent = file.name || "ไฟล์วิดีโอ";
+  });
+
+  toast('เริ่มวิเคราะห์วิดีโอ…');
+
+  // รีเซ็ตสถานะ/กราฟ
+  savedSnapshots = 0;
+  expectedSnapshots = 0;
+  countedTimes.clear();
+  processingTitle.textContent = 'กำลังประมวลผลวิดีโอ';
+  summaryLink.classList.add('hidden');
+  updateProgressFromSnapshots();
+
+  barCounts = new Map();
+  totals = EMO_KEYS.reduce((a,k)=>{ a[k]=0; return a; },{});
+  confAgg = new Map();
+  initRealtimeBarChart();
+  refreshRealtimeBar();
+
+  // เคลียร์ snapshot เดิมใน backend (ถ้าใช้)
+  try { await fetch("http://127.0.0.1:5000/api/clear_snapshots", { method: "POST" }); } catch {}
+
+  // เล่นวิดีโอ
+  video.src = URL.createObjectURL(file);
+  video.load();
+  safePlay(video);
+}
+
+// ===== CSV Upload (offline review) =====
+const SS_KEY = "CA_CSV_TEXT";
+const MAX_CSV_BYTES = 10 * 1024 * 1024; // 10MB
+const EXPECTED_HEADER = [
+  "timestamp","time","person_id","bbox","emotion","confidence","behavior","eye_status","pitch","yaw","roll"
+];
+
+function normalizeNewlines(s){ return s.replace(/\r?\n/g, "\n"); }
+function stripBOM(s){ return s.replace(/^\uFEFF/, ""); }
+function isOurCsv(text){
+  if(!text) return false;
+  const t = stripBOM(normalizeNewlines(text)).trim();
+  if(!t) return false;
+  const cols = t.split("\n")[0].trim().split(",").map(x=>x.replace(/^"|"$/g,"").trim());
+  return cols.length === EXPECTED_HEADER.length && cols.every((c,i)=>c===EXPECTED_HEADER[i]) && t.split("\n").length>1;
+}
+
+// 1) เลือกไฟล์ CSV ผ่านปุ่ม
+csvInputEl?.addEventListener("change", () => {
+  const f = csvInputEl.files?.[0];
+  if (!f) return;
+  if (f.size > MAX_CSV_BYTES) return toast("ไฟล์ใหญ่เกิน 10MB","err");
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const text = typeof reader.result === "string" ? reader.result : "";
+      if (!isOurCsv(text)) return toast("ไฟล์นี้ไม่ใช่ CSV จากระบบเรา ❌","err");
+      csvFileNameEl.textContent = `เลือกไฟล์: ${f.name}`;
+      sessionStorage.setItem(SS_KEY, stripBOM(normalizeNewlines(text)));
+      sessionStorage.setItem("CA_CSV_NAME", f.name);
+      const encoded = encodeURIComponent(f.name || "CSV");
+      toast("โหลด CSV สำเร็จ ✓ กำลังไปที่หน้าสรุป…");
+      location.href = `summary.html?source=csv&name=${encoded}`;
+    }catch(e){ console.error(e); toast("อ่านไฟล์ไม่สำเร็จ","err"); }
+  };
+  reader.onerror = () => toast("อ่านไฟล์ไม่สำเร็จ","err");
+  reader.readAsText(f,"utf-8");
+});
+
+// 2) ลาก-วาง CSV ที่ช่องขวา
+bindDropArea(dropZoneCsv, (files)=>{
+  const f = files.find(x=>/\.csv$/i.test(x.name) || x.type === "text/csv");
+  if(!f) return toast("กรุณาวางไฟล์ .csv","err");
+  if (f.size > MAX_CSV_BYTES) return toast("ไฟล์ใหญ่เกิน 10MB","err");
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const text = typeof reader.result === "string" ? reader.result : "";
+      if (!isOurCsv(text)) return toast("ไฟล์นี้ไม่ใช่ CSV จากระบบเรา ❌","err");
+      csvFileNameEl.textContent = `เลือกไฟล์: ${f.name}`;
+      sessionStorage.setItem(SS_KEY, stripBOM(normalizeNewlines(text)));
+      csvFileNameEl.textContent = `เลือกไฟล์: ${f.name}`;
+      sessionStorage.setItem("CA_CSV_NAME", f.name);         // เก็บใน sessionStorage เหมือนเดิม
+      sessionStorage.setItem(SS_KEY, stripBOM(normalizeNewlines(text)));
+      const encoded = encodeURIComponent(f.name || "CSV");
+      toast("โหลด CSV สำเร็จ ✓ กำลังไปที่หน้าสรุป…");
+      location.href = `summary.html?source=csv&name=${encoded}`; // ส่งชื่อไฟล์ผ่าน URL ด้วย
+    }catch(e){ console.error(e); toast("อ่านไฟล์ไม่สำเร็จ","err"); }
+  };
+  reader.onerror = () => toast("อ่านไฟล์ไม่สำเร็จ","err");
+  reader.readAsText(f,"utf-8");
+});
+
+// 3) ลาก-วาง วิดีโอ ที่ช่องซ้าย
+bindDropArea(dropZoneVideo, (files)=>{
+  const f = files.find(x => x.type.startsWith("video/"));
+  if (!f) return toast("กรุณาวางไฟล์วิดีโอ","err");
+  beginAnalysisForFile(f);
+});
+
+// 4) กัน default ทั้งหน้า ป้องกันเบราว์เซอร์เปิดไฟล์ทับหน้าเว็บ
+["dragover","drop"].forEach(ev=>{
+  window.addEventListener(ev, e=>{
+    e.preventDefault(); e.stopPropagation();
+  });
+});
 
 // Theme management
 (function initTheme() {
@@ -58,36 +336,22 @@ function toast(msg, type = "ok") {
   });
 })();
 
-// Drag & drop functionality
-['dragenter', 'dragover'].forEach(ev => {
-  dropZone?.addEventListener(ev, e => {
-    e.preventDefault();
-    dropZone.classList.add('drag');
+// ===== Drag & Drop (รองรับ 2 ช่อง) =====
+function preventDefaults(e){ e.preventDefault(); e.stopPropagation(); }
+function setDragState(el, on){ el?.classList?.toggle("dragover", !!on); }
+function bindDropArea(areaEl, onDropFiles){
+  ["dragenter","dragover"].forEach(ev => areaEl?.addEventListener(ev, e => { preventDefaults(e); setDragState(areaEl, true); }));
+  ["dragleave","drop"].forEach(ev => areaEl?.addEventListener(ev, e => { preventDefaults(e); setDragState(areaEl, false); }));
+  areaEl?.addEventListener("drop", e => {
+    const files = Array.from(e.dataTransfer?.files || []);
+    onDropFiles(files);
   });
-});
+}
 
-['dragleave', 'drop'].forEach(ev => {
-  dropZone?.addEventListener(ev, e => {
-    e.preventDefault();
-    dropZone.classList.remove('drag');
-  });
-});
-
-dropZone?.addEventListener('drop', e => {
-  const f = e.dataTransfer?.files?.[0];
-  if (f) {
-    fileInputEl.files = e.dataTransfer.files;
-    fileInputEl.dispatchEvent(new Event('change'));
-  }
-});
-
-// Keyboard support for dropzone card (Enter/Space opens file picker)
-dropZone?.setAttribute('tabindex', '0');
-dropZone?.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    fileInputEl?.click();
-  }
+// วิดีโอ: change + drag&drop
+videoInputEl?.addEventListener("change", () => {
+  const f = videoInputEl.files?.[0];
+  beginAnalysisForFile(f);
 });
 
 // ===== Toggle video visibility =====
@@ -128,23 +392,33 @@ function computeExpectedSnapshots() {
 }
 
 function updateProgressFromSnapshots() {
-  const pct = expectedSnapshots > 0 
-    ? Math.min(100, Math.round((savedSnapshots / expectedSnapshots) * 100)) 
+  const pct = expectedSnapshots > 0
+    ? Math.min(100, Math.round((savedSnapshots / expectedSnapshots) * 100))
     : 0;
-  
+
   if (progressBar) progressBar.style.width = pct + '%';
   if (percentText) percentText.textContent = pct + '%';
-  
   if (snapCountEl) {
-    snapCountEl.textContent = expectedSnapshots > 0 
-      ? `${savedSnapshots}/${expectedSnapshots}` 
+    snapCountEl.textContent = expectedSnapshots > 0
+      ? `${savedSnapshots}/${expectedSnapshots}`
       : `${savedSnapshots}/—`;
   }
-  
+
   if (pct === 100) {
     processingTitle.textContent = 'วิเคราะห์สำเร็จ';
+    // ปุ่มสรุปบนการ์ด: โชว์ + ทำให้เด่น + โฟกัส
+    summaryLink.href = 'summary.html?source=video';
     summaryLink.classList.remove('hidden');
-    toast('วิเคราะห์เสร็จแล้ว ✅');
+    summaryLink.classList.add('btn-primary');
+    setTimeout(() => summaryLink.focus?.(), 0);
+
+    // ป๊อปอัปแจ้งเตือนพร้อมปุ่ม "ดูสรุปผล"
+    openAlert('วิเคราะห์เสร็จแล้ว ✅', {
+      title: 'แจ้งเตือน',
+      type: 'ok',
+      primaryLabel: 'ดูสรุปผล',
+      primaryHref: 'summary.html?source=video'
+    });
   }
 }
 
@@ -557,11 +831,19 @@ function startVideoUpload() {
     // Play video
     video.src = URL.createObjectURL(file);
     video.load();
+    safePlay(video)
     
-    video.play().catch(err => {
-      console.error("ไม่สามารถเล่นวิดีโอ:", err);
-      toast('เล่นวิดีโอไม่สำเร็จ', 'err');
-    });
+    async function safePlay(vid) {
+      try {
+        await vid.play();
+      } catch (e) {
+        // เคสที่เจอบ่อยและ “ไม่ถือว่า fail”
+        if (e && (e.name === 'AbortError')) return;           // ถูกยกเลิกเพราะมีการโหลด/สั่ง play ซ้อน
+        if (e && (e.name === 'NotAllowedError') && vid.muted) return; // Chrome policy แต่วีดิโอ muted แล้ว ปล่อยผ่าน
+        console.error('video.play() failed:', e);
+        toast('เล่นวิดีโอไม่สำเร็จ', 'err');
+      }
+    }
   });
   
   // Canvas + Detection
