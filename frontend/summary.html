@@ -6,10 +6,8 @@
   <title>Classroom Analyzer — Summary</title>
   <link rel="stylesheet" href="summary.css"/>
   <link rel="stylesheet" href="styles.css"/>
-  <!-- Charts & capture -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <!-- NEW: jsPDF สำหรับประกอบ PDF -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
@@ -26,7 +24,6 @@
   <main class="page">
     <h1 class="page-title">สรุปผลการวิเคราะห์พฤติกรรมในชั้นเรียน</h1>
 
-    <!-- Toolbar บน -->
     <div class="toolbar" role="toolbar" aria-label="ตัวกรองและมุมมอง">
       <div class="tabs">
         <button id="tabOverview" class="btn tab active">วิเคราะห์ตามพฤติกรรม</button>
@@ -40,12 +37,10 @@
       </div>
     </div>
 
-    <!-- KPI -->
     <section class="panel" id="kpiPanel">
       <div class="kpi-grid" id="kpiGrid"></div>
     </section>
 
-    <!-- Toolbar Zoom -->
     <div class="toolbar" role="toolbar" aria-label="ซูมเวลา" id="zoomToolbar">
       <h4>กรองตามช่วงเวลา:</h4><br/>
       <div class="zoom-group">
@@ -55,7 +50,6 @@
       </div>
     </div>
 
-    <!-- OVERVIEW -->
     <section id="overviewView" class="view view-active">
       <div class="charts-grid" id="overviewGrid">
         <article class="card chart-card" id="cardPie">
@@ -71,7 +65,6 @@
       </div>
     </section>
 
-    <!-- 7 emotions stacked -->
     <section id="motionsView" class="view">
       <article class="card chart-card" id="cardEmo7">
         <header class="card-head"><h3>อารมณ์ทั้งหมด</h3></header>
@@ -80,7 +73,6 @@
     </section>
   </main>
 
-  <!-- ==== Modal: ตั้งชื่อผู้เรียนก่อนดาวน์โหลด CSV ==== -->
   <div id="nameModalBackdrop" class="modal-backdrop" hidden></div>
   <section id="nameModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle" hidden>
     <div class="modal__dialog">

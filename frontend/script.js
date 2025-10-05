@@ -654,12 +654,18 @@ function ensureTick(tk) {
 }
 
 function rowToEmotionKey(row) {
+  // แปลงข้อมูลแถว CSV/สตรีม → คีย์อารมณ์ 7+1 (not_in_frame)
+  // - ถ้า behavior เป็น "ไม่อยู่หน้าจอ" จะถูกแมปเป็น "not_in_frame"
+  // - ถ้า emotion ไม่อยู่ใน 7 หมวด ให้ fallback เป็น "neutral"
+
   const behavior = (row.behavior || "").trim();
   if (behavior === "ไม่อยู่หน้าจอ") return "not_in_frame";
   
   const e = (row.emotion || "").trim().toLowerCase();
   return EMO_KEYS.includes(e) ? e : "neutral";
 }
+
+// [อัปเดตกราฟเรียลไทม์] รวมค่าเพื่อใช้แสดงผลต่อเวลา
 
 function pushSnapshot(row) {
   const t = Number(row.time || 0);
@@ -884,6 +890,12 @@ function startVideoUpload() {
     resizeCanvas();
     
     let lastSnapshotSec = -1, isFetching = false;
+    // -------------------------------------------------------------
+    // [Flow] ดึงเฟรมจากวิดีโอ → ตรวจว่ามีคนอยู่หน้าจอไหม →
+    //        เตรียมภาพ (เฟรม/ครอปใบหน้า) → วิเคราะห์จำแนกอารมณ์ (7 กลุ่มจาก face-api.js)
+    //        → ส่งให้ backend วิเคราะห์/บันทึก → อัปเดตการ์ด/กราฟ/ความคืบหน้า
+    // -------------------------------------------------------------
+
     
     async function onFrame() {
       try {
@@ -922,6 +934,10 @@ function startVideoUpload() {
         const tick = 10;
         
         if (detections.length === 0) {
+          // [ตรวจคนอยู่หน้าจอ] เคสนี้ "ไม่พบใบหน้า" ⇒ ถือว่า Off-screen
+          // - เงื่อนไขทุก ๆ 10 วินาที จะจับภาพเต็มเฟรมของวิดีโอ
+          // - ส่งไป backend พร้อมสถานะ person_id=null เพื่อบันทึกว่า "ไม่อยู่หน้าจอ"
+    
           if (nowSec % tick === 0 && nowSec !== lastSnapshotSec && nowSec >= tick && !isFetching) {
             lastSnapshotSec = nowSec;
             isFetching = true;
@@ -980,6 +996,9 @@ function startVideoUpload() {
           isFetching = true;
           
           const frames = tracked.map(det => {
+            // [ดึงเฟรมจากวิดีโอ] ครอปบริเวณรอบใบหน้าที่ตรวจจับได้ (sw, sh กำหนดขนาดครอป)
+            // จุดศูนย์กลาง = กลาง bounding box ของใบหน้า เพื่อให้ใบหน้าอยู่กลางภาพ
+
             const box = det.detection.box;
             const sw = 500, sh = 600;
             
@@ -996,6 +1015,8 @@ function startVideoUpload() {
             tmp.getContext("2d", { willReadFrequently: true })
               .drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
             
+            // [วิเคราะห์จำแนก 7 อารมณ์] ใช้ face-api.js expressions เพื่อเลือกอารมณ์ที่มีค่าความมั่นใจสูงสุด
+            // อารมณ์ที่เป็นไปได้ (เริ่มต้นจากโมเดล): happy, neutral, sad, angry, fearful, disgusted, surprised
             const sorted = Object.entries(det.expressions || {})
               .sort((a, b) => b[1] - a[1]);
             

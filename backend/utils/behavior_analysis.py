@@ -2,12 +2,17 @@ import cv2
 import dlib
 import numpy as np
 import logging
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# model/ อยู่ระดับเดียวกับ utils/ (../model/..)
+PRED_PATH = os.path.join(BASE_DIR, '..', 'model', 'shape_predictor_68_face_landmarks.dat')
 
 # โหลด predictor
 class BehaviorAnalyzer:
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor("model/shape_predictor_68_face_landmarks.dat")
+        self.predictor = dlib.shape_predictor(PRED_PATH)
         self.ear_history = []
 
     def shape_to_np(self, shape):

@@ -1,7 +1,7 @@
 from queue import Queue
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-import cv2, os, datetime, logging, traceback, csv, json
+import cv2, os, datetime, logging, csv, json
 from utils.image_processing import base64_to_cv2
 from utils.behavior_analysis import analyze_behavior
 
@@ -16,7 +16,10 @@ logger.addHandler(file_handler); logger.addHandler(console_handler)
 app = Flask(__name__)
 CORS(app)
 
-CSV_PATH = "logs/emotion_snapshots.csv"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
+CSV_PATH = os.path.join(LOGS_DIR, "emotion_snapshots.csv")
 
 # ---------- SSE ----------
 subscribers = []

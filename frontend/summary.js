@@ -49,6 +49,13 @@ function parseCSVLine(line) {
   } out.push(cur);
   return out;
 }
+/**
+ * [รวมอารมณ์เป็น 3 กลุ่ม]
+ *  - Positive:   happy, surprised
+ *  - Neutral:    (ค่าอื่นที่ไม่อยู่ด้านลบ/ไม่อยู่หน้าจอ) + not matched → neutral
+ *  - Negative:   angry, sad, fearful, disgusted
+ *  - Off-screen: behavior มีคำว่า "ไม่อยู่หน้าจอ" หรือ emotion = "not_in_frame"
+ */
 function toGroup(row) {
   const beh = (row.behavior || "").trim();
   if (beh.includes("ไม่อยู่หน้าจอ")) return GROUPS[3];
@@ -318,7 +325,7 @@ function renderEmo7OverTime(data, step) {
   // label เป็นช่วงเวลา เช่น 0-10s, 10-20s ...
   const labels = ticks.map(t => `${t}-${t + step}s`);
 
-// ---------- โหมด 10s: ค่าเฉลี่ย Confidence + แสดง Off-screen เป็นสัดส่วนเวลา ----------
+// ---------- 10s: ค่าเฉลี่ย Confidence + แสดง Off-screen เป็นสัดส่วนเวลา ----------
 if (step === 10) {
   const emo7 = ["happy","neutral","sad","angry","fearful","disgusted","surprised"];
   const emo8 = [...emo7, "off"];
@@ -326,7 +333,6 @@ if (step === 10) {
   const perBin = ticks.map(t0 => {
     const rows = data.filter(r => Math.floor((Number(r.time) || 0) / step) * step === t0);
 
-    // นับจำนวน off เพื่อนำไปคิดสัดส่วน
     let offCount = 0;
     const sum = Object.fromEntries(emo7.map(k => [k, 0]));
     const cnt = Object.fromEntries(emo7.map(k => [k, 0]));
@@ -339,13 +345,13 @@ if (step === 10) {
       if (!emo7.includes(e)) return;
       let conf = Number(r.confidence);
       if (!Number.isFinite(conf)) return;
-      if (conf <= 1) conf *= 100;                 // รองรับ 0–1
-      conf = Math.max(0, Math.min(100, conf));    // clamp
+      if (conf <= 1) conf *= 100;                 
+      conf = Math.max(0, Math.min(100, conf));    
       sum[e] += conf; cnt[e] += 1;
     });
 
     const avg = emo7.map(k => (cnt[k] ? sum[k] / cnt[k] : 0));
-    const offPct = rows.length ? (offCount / rows.length) * 100 : 0;  // ให้ off เป็น % เวลา
+    const offPct = rows.length ? (offCount / rows.length) * 100 : 0;  
     return [...avg, offPct];
   });
 
@@ -384,6 +390,7 @@ if (step === 10) {
 }
 
   // ---------- โหมด 30s/60s: Stacked % ----------
+  // ในช่วง 30s/60s จะเน้น "สัดส่วนการปรากฏ" ของแต่ละอารมณ์ (% ต่อช่วง) รวมถึง Off-screen
   const perBin = ticks.map(t0 => {
     const rows = data.filter(r => Math.floor((Number(r.time) || 0) / step) * step === t0);
     const counts = Object.fromEntries(EMO8.map(k => [k, 0]));
