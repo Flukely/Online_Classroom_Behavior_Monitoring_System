@@ -199,7 +199,7 @@ function setActiveZoomButtons(){
     el.classList.toggle('is-active', z === currentZoom);
   });
 }
-
+// step = bin width (10s, 30s, 60s)
 function renderOverview(data, step) {
   const sum = computeSummary(data);
   renderKpis(sum);
@@ -307,7 +307,7 @@ function renderOverview(data, step) {
             ticks: {
               callback: (v) => (v===1?"Positive":v===0?"Neutral":v===-1?"Negative":v===-2?"Off-screen":"")
             },
-            title: { display: true, text: "กลุ่มอารมณ์" }
+            title: { display: true, text: "กลุ่มความรู้สึก" }
           }
         }
       }

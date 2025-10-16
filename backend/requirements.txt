@@ -1,6 +1,6 @@
-flask
-flask-cors
-opencv-python
-dlib
-numpy
-pillow
+Flask==3.0.3
+Flask-Cors==5.0.0
+numpy==1.26.4
+opencv-python-headless==4.9.0.80
+Pillow==10.3.0
+dlib==20.0.0

@@ -5,13 +5,13 @@ import cv2, os, datetime, logging, csv, json
 from utils.image_processing import base64_to_cv2
 from utils.behavior_analysis import analyze_behavior
 
-os.makedirs('logs', exist_ok=True)
-file_handler = logging.FileHandler('logs/behavior_analysis.log', encoding='utf-8')
-console_handler = logging.StreamHandler()
-fmt = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-file_handler.setFormatter(fmt); console_handler.setFormatter(fmt)
-logger = logging.getLogger(); logger.setLevel(logging.DEBUG)
-logger.addHandler(file_handler); logger.addHandler(console_handler)
+# os.makedirs('logs', exist_ok=True)
+# file_handler = logging.FileHandler('logs/behavior_analysis.log', encoding='utf-8')
+# console_handler = logging.StreamHandler()
+# fmt = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+# file_handler.setFormatter(fmt); console_handler.setFormatter(fmt)
+# logger = logging.getLogger(); logger.setLevel(logging.DEBUG)
+# logger.addHandler(file_handler); logger.addHandler(console_handler)
 
 app = Flask(__name__)
 CORS(app)
@@ -87,7 +87,7 @@ def analyze_batch():
             rows.append(row)
         return jsonify({"status": "success", "count": len(rows), "rows": rows})
     except Exception:
-        logger.error("batch fail", exc_info=True)
+        # logger.error("batch fail", exc_info=True)
         return jsonify({"error":"Internal server error"}), 500
 
 CSV_HEADER = "timestamp,time,person_id,bbox,emotion,confidence,behavior,eye_status,pitch,yaw,roll\n"
@@ -106,10 +106,10 @@ def clear_snapshots():
     return jsonify({'status':'success'})
 
 if __name__ == '__main__':
-    try:
-        logger.info("Starting Flask server")
-        test_window = cv2.namedWindow('Test', cv2.WINDOW_AUTOSIZE); cv2.destroyWindow('Test')
-        logger.info("Display is available")
-    except Exception as e:
-        logger.error(f"Display not available: {e}")
+    # try:
+    #     logger.info("Starting Flask server")
+    #     test_window = cv2.namedWindow('Test', cv2.WINDOW_AUTOSIZE); cv2.destroyWindow('Test')
+    #     logger.info("Display is available")
+    # except Exception as e:
+    #     logger.error(f"Display not available: {e}")
     app.run(debug=True, threaded=True, use_reloader=False)  # << threaded=True
