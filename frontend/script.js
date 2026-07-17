@@ -106,8 +106,8 @@ openNotiBtn?.addEventListener('click', () => {
 function openAlert(message, {
   title = 'แจ้งเตือน',
   type = 'ok',
-  primaryLabel,            // เช่น 'ดูสรุปผล'
-  primaryHref,             // เช่น 'summary.html?...'
+  primaryLabel,            // ดูสรุปผล
+  primaryHref,             // summary.html?...
   primaryOnClick           // ฟังก์ชันทางเลือกถ้าอยากควบคุมเอง
 } = {}) {
   if (!modalAlert) return;
@@ -138,7 +138,7 @@ function openAlert(message, {
 }
 
 // ====== Notification Center (เชื่อมกับ toast) ======
-const notiHistory = []; // เก็บประวัติแจ้งเตือนสำหรับศูนย์แจ้งเตือน
+const notiHistory = [];
 function updateNotiBadge() {
   if (notiBadge) notiBadge.textContent = String(notiHistory.length);
 }
@@ -541,19 +541,19 @@ function rowToEmotionKey(row) {
   return EMO_KEYS.includes(e) ? e : "neutral";
 }
 
-// [อัปเดตกราฟเรียลไทม์] รวมค่าเพื่อใช้แสดงผลต่อเวลา
+// กราฟเรียลไทม์ รวมค่าเพื่อใช้แสดงผลต่อเวลา
 
 function pushSnapshot(row) {
   const t = Number(row.time || 0);
   const tick = Math.floor(t / TICK_SEC) * TICK_SEC;
   const key = rowToEmotionKey(row);
 
-  // --- (เดิม) นับจำนวนต่อ tick เพื่อกราฟรวม/สัดส่วน ---
+  // --- นับจำนวนต่อ tick เพื่อกราฟรวม/สัดส่วน ---
   const bucket = ensureTick(tick);
   bucket[key] = (bucket[key] || 0) + 1;
   totals[key] = (totals[key] || 0) + 1;
 
-  // --- (ใหม่) สะสม confidence เพื่อนำไปทำเส้น Y=confidence ---
+  // --- สะสม confidence เพื่อนำไปทำเส้น Y=confidence ---
   const c = Number(row.confidence);
   let conf = Number.isFinite(c) ? c : 0;  // 0..1 จากโมเดล
   if (key === 'not_in_frame') conf = 1;   // ไม่อยู่หน้าจอ = 100%
@@ -567,8 +567,8 @@ function pushSnapshot(row) {
 
 }
 
-// ===== Real-time stacked bar (แท่งเรียลไทม์) =====
-const WINDOW_TICKS = 30;      // แสดงเฉพาะ 30 ช่วงล่าสุด (อ่านง่าย)
+// ===== Real-time stacked bar =====
+const WINDOW_TICKS = 30;      // แสดงเฉพาะ 30 ช่วงล่าสุด
 let barChart = null;
 
 function initRealtimeBarChart() {
@@ -586,7 +586,7 @@ function initRealtimeBarChart() {
         backgroundColor: EMO_BG[k],
         borderColor: EMO_BORDER[k],
         borderWidth: 1,
-        grouped: false,          // <<< ทำให้ทุกแท่งอยู่กึ่งกลาง (ไม่จัดช่องแยก)
+        grouped: false,
         maxBarThickness: 22
       }))
     },
@@ -643,7 +643,7 @@ function refreshRealtimeBar() {
     });
   });
 
-  // ยืดความกว้าง canvas เพื่อเลื่อนดูได้ (ถ้าแท่งเยอะ)
+  // ยืดความกว้าง canvas เพื่อเลื่อนดูได้
   const cv = barChart.canvas;
   const PX_PER_BAR = 36; // กว้างต่อคอลัมน์
   const minW = 680;      // ให้พอดีการ์ด

@@ -171,7 +171,6 @@ function formatMinSec(sec) {
 }
 
 function renderKpis(sum) {
-  // **ตัด KPI “จำนวนบุคคล” ออก**
   const cards = [
     { h: "จำนวนครั้งที่ตรวจจับ", v: sum.detections },
     { h: "เวลาคลิป (นาที)", v: formatMinSec(sum.clipTime) },
@@ -363,7 +362,7 @@ if (step === 10) {
     borderColor:     k === "off" ? RGBA(PAL.off, 1)    : RGBA(PAL[k], 1),
     borderWidth:     k === "off" ? 0 : 1,
     borderRadius:    6,
-    // >>> ความหนาแท่งเฉพาะ 10s
+    // ความหนาแท่งเฉพาะ 10s
     maxBarThickness: 40,     // จำกัดความหนาสูงสุด
     grouped: false,          // ทุก dataset ใช้ slot เดียวกัน
   }));
@@ -514,8 +513,8 @@ function bindUI() {
       const sanitizeFileName = (name) => {
         return (name || "")
           .trim()
-          .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "") // อักขระต้องห้าม
-          .replace(/\s+/g, "_")                       // เว้นวรรค -> _
+          .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "")
+          .replace(/\s+/g, "_")                      
           .slice(0, 60);
       };
 
@@ -552,7 +551,7 @@ function bindUI() {
 
   // ===== Download CSV with pretty modal for name =====
   document.getElementById("downloadCsvBtn").addEventListener("click", async () => {
-    // เปิดโมดัลถามชื่อ (พรีฟิลด้วยที่เคยกรอก)
+    // เปิดโมดัลถามชื่อ 
     const prev = localStorage.getItem("ca_student_name") || "";
     const safeName = await openNameModal(prev);
     if (safeName === null) return; // กดยกเลิก
@@ -560,7 +559,7 @@ function bindUI() {
     // จำชื่อไว้ใช้คราวหน้า
     localStorage.setItem("ca_student_name", safeName);
 
-    // โหลด CSV (จาก API หรือจากตัวแปร text ที่คุณมี)
+    // โหลด CSV 
     const res = await fetch(`${API_BASE}/api/snapshots`, { cache: "no-store" });
     let text = await res.text();
 
@@ -574,7 +573,7 @@ function bindUI() {
 
     const filename = `emotion_snapshots_${safeName}_${stamp}.csv`;
 
-    // ใส่ BOM กันภาษาไทยเพี้ยน แล้วดาวน์โหลด
+    // ใส่ BOM กันภาษาไทยเพี้ยน
     const bom = "\uFEFF";
     const blob = new Blob([bom, text], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
@@ -607,7 +606,7 @@ function disableChartAnimationTemporarily(charts) {
   };
 }
 
-// ตั้งชื่อไฟล์ PDF จากชื่อไฟล์ CSV (ถ้ามี) + timestamp
+// ตั้งชื่อไฟล์ PDF 
 function makePdfName() {
   const chip = document.getElementById("uploadedCsvName");
   let base = "summary";
@@ -636,13 +635,13 @@ async function downloadSummaryPDF() {
     prevGlobalAnim = Chart.defaults.animation;
     Chart.defaults.animation = false;
 
-    // ปิดในอินสแตนซ์ที่มีอยู่แล้วด้วย (ถ้ามี)
+    // ปิดในอินสแตนซ์ที่มีอยู่แล้วด้วย 
     restoreInstances = disableChartAnimationTemporarily([
       window.__pieChart, window.__timeChart, window.__emo7Chart
     ]);
 
-    // จับภาพ DOM (ข้อความไทยคมชัด) — เร่งความคมชัดขึ้น
-    const SNAP_SCALE = 3; // เดิม 2 → คมขึ้น
+    // จับภาพ DOM (ข้อความไทยคมชัด) 
+    const SNAP_SCALE = 3; //
     const snap = async (el) => {
       await new Promise(r => requestAnimationFrame(r)); // รอ 1 เฟรมให้ DOM/Canvas เสถียร
       const can = await html2canvas(el, { backgroundColor: "#ffffff", scale: SNAP_SCALE });
@@ -666,7 +665,7 @@ async function downloadSummaryPDF() {
     // KPI เต็มแถว
     const kpiImg = await snap(document.getElementById("kpiPanel"));
 
-    // เตรียมภาพ 3 ช่วงเวลา (ข้ามช่วงที่ไม่มี)
+    // เตรียมภาพ 3 ช่วงเวลา 
     const zooms = [1, 2, 3];
     const rows = [];
     for (const z of zooms) {
@@ -700,7 +699,7 @@ async function downloadSummaryPDF() {
     const availableForRows = pageH - margin * 2 - kpiHmm - (maxRows - 1) * gutter;
     let rowHmm = availableForRows / Math.max(1, maxRows);
 
-    // ถ้าต่ำกว่า MIN_ROW ให้หด KPI ลง (แต่ไม่ต่ำกว่า 14mm) เพื่อยกความสูงให้กราฟ
+    // ถ้าต่ำกว่า MIN_ROW ให้หด KPI ลง 
     if (rowHmm < MIN_ROW) {
       const need = (MIN_ROW * maxRows + (maxRows - 1) * gutter) - (pageH - margin * 2);
       kpiHmm = Math.max(14, kpiHmm - need);
@@ -738,7 +737,7 @@ async function downloadSummaryPDF() {
     const d = new Date(), pad = n => String(n).padStart(2, "0");
     const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
 
-    pdf.save(makePdfName());    // ถ้ามาถึงตรงนี้คือเริ่มดาวน์โหลดแล้ว
+    pdf.save(makePdfName());
     saved = true;
   } catch (err) {
     // ไม่แจ้งเตือนที่นี่ ปล่อยให้คนเรียกเป็นคนตัดสินใจ
@@ -778,7 +777,6 @@ async function downloadSummaryPDF() {
       if (busy) return;
       // ตรวจว่า jsPDF ถูกโหลดแล้วหรือยัง
       if (!window.jspdf || !window.jspdf.jsPDF) {
-        // แจ้งผู้ใช้ให้ชัด (จะเห็นทันทีถ้า CDN โหลดไม่ขึ้น/ออฟไลน์)
         alert("ไม่สามารถโหลดไลบรารี jsPDF ได้\nตรวจการเชื่อมต่ออินเทอร์เน็ต หรือใช้ไฟล์แบบติดตั้งในเครื่อง");
         return;
       }
